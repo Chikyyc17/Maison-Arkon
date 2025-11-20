@@ -17,6 +17,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
+        // Configuración de Tailwind CSS con tus colores y fuentes
         tailwind.config = {
             theme: {
                 extend: {
@@ -32,11 +33,16 @@
                     },
                     animation: {
                         'marquee': 'marquee 20s linear infinite',
+                        'modal-in': 'modal-in 0.3s ease-out forwards',
                     },
                     keyframes: {
                         marquee: {
                             '0%': { transform: 'translateX(0%)' },
                             '100%': { transform: 'translateX(-100%)' },
+                        },
+                        'modal-in': {
+                            '0%': { opacity: '0', transform: 'scale(0.95) translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
                         }
                     }
                 }
@@ -45,29 +51,43 @@
     </script>
 
     <style>
+        /* Estilos base y de scroll */
         html { scroll-behavior: smooth; background-color: #09090b; }
         body { color: #fafafa; overflow-x: hidden; }
         ::selection { background-color: #ef4444; color: white; }
         
-        /* Efecto Zoom en Imagenes */
+        /* Efecto Zoom en Imagenes de Catálogo */
         .product-image-container { overflow: hidden; position: relative; }
         .product-image-container img { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
         .group:hover .product-image-container img { transform: scale(1.05); }
 
-        /* Botón hover */
+        /* Botón hover (adaptado a arkon-black) */
         .btn-hover-effect { position: relative; overflow: hidden; transition: color 0.3s; }
         .btn-hover-effect::before {
             content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background-color: #fff; transition: left 0.3s ease-in-out; z-index: -1;
+            background-color: #ef4444; /* Usando arkon-red como hover */
+            transition: left 0.3s ease-in-out; z-index: -1;
         }
         .btn-hover-effect:hover::before { left: 0; }
-        .btn-hover-effect:hover { color: black; }
+        .btn-hover-effect:hover { color: #09090b; } /* Cambia el texto a negro de arkon */
+
+        /* Botón principal (para carrito y modal) */
+        .btn-primary {
+            @apply bg-arkon-red text-arkon-white font-semibold py-3 px-6 rounded-xl hover:bg-red-600 transition duration-300 shadow-lg shadow-arkon-red/30;
+        }
+
+        /* Estilo para el modal de producto */
+        .arkon-modal-card {
+            background-color: #09090b; /* Fondo oscuro del modal */
+            border: 1px solid #1f2937; /* Borde sutil */
+            animation: modal-in 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="font-sans bg-arkon-black text-arkon-white">
 
-    <!-- NAVBAR -->
-    <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-arkon-black/80 backdrop-blur-md border-b border-white/10">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-arkon-black/90 backdrop-blur-md border-b border-white/10">
         <div class="hidden md:flex gap-6 font-mono text-xs uppercase tracking-wider">
             <a href="#shop" class="hover:text-arkon-red transition-colors">Shop All</a>
             <a href="#" class="hover:text-arkon-red transition-colors">New Arrivals</a>
@@ -79,7 +99,11 @@
         </a>
 
         <div class="flex gap-6 items-center">
-            <i data-lucide="shopping-bag" class="w-5 h-5 cursor-pointer hover:text-arkon-red transition-colors"></i>
+            <!-- Botón de Carrito (Actualizado con contador) -->
+            <button id="open-cart-btn" class="relative p-2 rounded-full hover:bg-white/10 transition duration-200">
+                <i data-lucide="shopping-bag" class="w-5 h-5 cursor-pointer hover:text-arkon-red transition-colors"></i>
+                <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-arkon-red rounded-full">0</span>
+            </button>
             <i data-lucide="menu" class="w-6 h-6 md:hidden cursor-pointer"></i>
         </div>
     </nav>
@@ -87,11 +111,10 @@
     <!-- HERO SECTION (FOTO PORTADA) -->
     <header class="relative h-screen w-full overflow-hidden flex items-center justify-center">
         <div class="absolute inset-0 z-0">
-            <!-- AQUÍ VA TU FOTO DEL MODELO -->
             <img src="portada.jpg" 
                  class="w-full h-full object-cover object-top opacity-60" 
                  alt="Maison Arkon Campaign"
-                 onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'"> <!-- Fallback por si no encuentra la foto -->
+                 onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'">
             <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/30 via-transparent to-arkon-black"></div>
         </div>
 
@@ -111,13 +134,13 @@
     </header>
 
     <!-- TEXTO EN MOVIMIENTO -->
-    <div class="bg-white text-black py-3 overflow-hidden whitespace-nowrap border-y border-black">
+    <div class="bg-arkon-red text-arkon-black py-3 overflow-hidden whitespace-nowrap border-y border-black">
         <div class="inline-block animate-marquee font-display text-xl uppercase tracking-tighter">
             New Drop Available • Worldwide Shipping • Maison Arkon Studios • Limited Quantities • New Drop Available •
         </div>
     </div>
 
-    <!-- SECCIÓN DESTACADA (FOTO ACCESORIOS) -->
+    <!-- SECCIÓN DESTACADA -->
     <section class="py-0">
         <div class="grid grid-cols-1 md:grid-cols-2 bg-[#121212]">
             <div class="p-12 md:p-24 flex flex-col justify-center border-r border-white/10">
@@ -128,7 +151,6 @@
                 <a href="#shop" class="text-arkon-red font-mono text-sm uppercase hover:underline underline-offset-4 decoration-1">Ver Catálogo -></a>
             </div>
             <div class="h-[50vh] md:h-auto relative overflow-hidden">
-                <!-- AQUÍ VA TU FOTO DE ACCESORIOS -->
                 <img src="accesorios.jpg" 
                      class="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
                      alt="Flatlay accesorios"
@@ -143,62 +165,9 @@
             <h2 class="font-display text-4xl uppercase tracking-tighter">Catálogo</h2>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
-            
-            <!-- Producto 1: Camiseta Crema -->
-            <div class="group cursor-pointer">
-                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
-                    <!-- AQUÍ VA LA CAMISETA CREMA -->
-                    <img src="camiseta_crema.jpg" class="p-0" alt="Gothic Tee"
-                         onerror="this.src='https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1780&auto=format&fit=crop'">
-                    <div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">Best Seller</div>
-                </div>
-                <div class="flex justify-between items-start">
-                    <div><h3 class="font-bold text-lg uppercase">Gothic Logo Tee</h3><p class="text-sm text-gray-500 font-mono">Cream / Oversized</p></div>
-                    <span class="font-mono text-sm font-bold">$15.00</span>
-                </div>
-            </div>
-
-            <!-- Producto 2: Camiseta Blanca -->
-            <div class="group cursor-pointer">
-                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
-                    <!-- AQUÍ VA LA CAMISETA BLANCA -->
-                    <img src="camiseta_blanca.jpg" class="p-0" alt="Chrome Tee"
-                         onerror="this.src='https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1887&auto=format&fit=crop'">
-                </div>
-                <div class="flex justify-between items-start">
-                    <div><h3 class="font-bold text-lg uppercase">Chrome logo Tee</h3><p class="text-sm text-gray-500 font-mono">White / Heavy Cotton</p></div>
-                    <span class="font-mono text-sm font-bold">$15.00</span>
-                </div>
-            </div>
-
-            <!-- Producto 3: Shorts -->
-            <div class="group cursor-pointer">
-                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
-                    <!-- AQUÍ VA EL SHORT -->
-                    <img src="short.jpg" class="p-0" alt="Patch Shorts"
-                         onerror="this.src='https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=2070&auto=format&fit=crop'">
-                    <div class="absolute top-3 left-3 bg-white text-black text-[10px] font-bold px-2 py-1 uppercase">Limited</div>
-                </div>
-                <div class="flex justify-between items-start">
-                    <div><h3 class="font-bold text-lg uppercase">Chaos Patch Denim</h3><p class="text-sm text-gray-500 font-mono">Vintage Blue / Custom</p></div>
-                    <span class="font-mono text-sm font-bold">$35.00</span>
-                </div>
-            </div>
-
-             <!-- Producto 4: Outfit Completo (Reusando Portada) -->
-             <div class="group cursor-pointer">
-                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
-                    <!-- AQUÍ REPETIMOS PORTADA O FOTO FULL -->
-                    <img src="portada.jpg" class="p-0" alt="Full Outfit"
-                         onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'">
-                </div>
-                <div class="flex justify-between items-start">
-                    <div><h3 class="font-bold text-lg uppercase">The Arkon Look</h3><p class="text-sm text-gray-500 font-mono">Full Silhouette</p></div>
-                    <span class="font-mono text-sm font-bold">$185.00</span>
-                </div>
-            </div>
-
+        <!-- El grid ahora se renderiza dinámicamente o usa llamadas a openModal -->
+        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+            <!-- Los productos se llenarán aquí mediante JavaScript (ver abajo) -->
         </div>
     </section>
 
@@ -207,7 +176,8 @@
         <div class="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
                 <h2 class="font-display text-2xl uppercase mb-2">Maison Arkon</h2>
-                <p class="text-gray-500 text-sm">Streetwear de lujo.</p>
+                <p class="text-gray-500 text-sm">Streetwear de lujo. ID de Sesión: <span id="user-id-display" class="font-mono text-xs text-gray-400">Cargando...</span></p>
+                <div id="status-message" class="mt-2 text-xs text-red-400 hidden"></div>
             </div>
             <div class="md:text-right text-gray-600 text-xs font-mono uppercase">
                 &copy; 2024 Maison Arkon.
@@ -215,8 +185,643 @@
         </div>
     </footer>
 
-    <script>
-        lucide.createIcons();
+    <!-- ========================================================================= -->
+    <!-- MODAL DE VISTA DE PRODUCTO (Detalle, Tallas, Colores) -->
+    <!-- ========================================================================= -->
+    <div id="product-modal" class="fixed inset-0 bg-arkon-black/90 backdrop-blur-sm z-50 hidden overflow-y-auto" onclick="if(event.target.id === 'product-modal') closeModal()">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="arkon-modal-card rounded-xl shadow-2xl m-4 w-full max-w-5xl p-6 relative" onclick="event.stopPropagation()">
+                
+                <!-- Botón de Cerrar -->
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-arkon-red transition duration-200">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+
+                <div id="modal-content" class="grid md:grid-cols-2 gap-8">
+                    <!-- Columna de Imagen -->
+                    <div class="md:sticky md:top-6">
+                        <img id="modal-product-image" src="" alt="Producto seleccionado" class="w-full h-auto object-cover rounded-md border border-white/10 shadow-xl">
+                    </div>
+
+                    <!-- Columna de Detalles y Opciones -->
+                    <div class="flex flex-col">
+                        <h2 id="modal-product-name" class="font-display text-4xl uppercase text-arkon-white mb-2"></h2>
+                        <p id="modal-product-price" class="font-mono text-3xl font-bold text-arkon-red mb-4"></p>
+                        
+                        <p id="modal-product-description" class="text-gray-400 leading-relaxed mb-6 border-l-2 border-arkon-red/50 pl-3 text-sm"></p>
+
+                        <!-- Selector de Color -->
+                        <div id="color-selector" class="mb-6">
+                            <h3 class="font-mono text-xs uppercase text-gray-300 mb-2">Color: <span id="selected-color-name" class="font-normal text-arkon-red"></span></h3>
+                            <div class="flex space-x-3">
+                                <!-- Botones de color -->
+                            </div>
+                        </div>
+
+                        <!-- Selector de Talla -->
+                        <div id="size-selector" class="mb-8">
+                            <h3 class="font-mono text-xs uppercase text-gray-300 mb-2">Talla: <span id="selected-size-name" class="font-normal text-arkon-red"></span></h3>
+                            <div class="flex flex-wrap gap-3">
+                                <!-- Botones de talla -->
+                            </div>
+                        </div>
+                        
+                        <!-- Botón Añadir al Carrito -->
+                        <button id="add-to-cart-btn" class="btn-primary flex items-center justify-center gap-2 mt-auto disabled:opacity-30 disabled:cursor-not-allowed">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            Añadir al Carrito
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mensaje de Notificación (Agregado al Carrito) -->
+                <div id="notification" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-arkon-red text-white py-2 px-4 rounded-lg shadow-xl shadow-arkon-red/50 transition-all duration-300 opacity-0 pointer-events-none">
+                    Añadido al Carrito!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL/SIDEBAR DEL CARRITO (Carrito de Compras) -->
+    <!-- ========================================================================= -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-arkon-black shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-l border-white/10">
+        
+        <!-- Encabezado del Carrito -->
+        <div class="p-6 border-b border-white/10 flex justify-between items-center">
+            <h3 class="font-display text-2xl text-arkon-white uppercase">Carrito</h3>
+            <button onclick="closeCart()" class="text-gray-400 hover:text-arkon-red">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Contenido del Carrito -->
+        <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 space-y-4">
+            <p id="empty-cart-message" class="text-gray-600 text-center py-10">El carrito está vacío.</p>
+        </div>
+
+        <!-- Resumen y Checkout -->
+        <div class="p-6 border-t border-white/10">
+            <div class="flex justify-between items-center text-xl font-mono font-bold mb-4">
+                <span>Total:</span>
+                <span id="cart-total" class="text-arkon-red">$0.00</span>
+            </div>
+            <button onclick="checkout()" class="btn-primary w-full text-lg">
+                Proceder al Pago
+            </button>
+            <p class="text-xs text-gray-500 text-center mt-2">Guardado en tiempo real con Firestore.</p>
+        </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- LÓGICA DE FIREBASE Y E-COMMERCE (JavaScript) -->
+    <!-- ========================================================================= -->
+    <script type="module">
+        
+        // =========================================================================
+        // 1. CONFIGURACIÓN DE FIREBASE (MANDATORIO PARA PERSISTENCIA DEL CARRITO)
+        // =========================================================================
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        setLogLevel('Debug'); // Habilitar logs de debug para Firestore
+
+        // Variables globales proporcionadas por el entorno de Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        let cart = []; // Estado local del carrito
+
+        // Función de inicialización de Firebase
+        async function initializeFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Autenticación
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Listener de estado de autenticación
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        document.getElementById('user-id-display').textContent = userId;
+                        isAuthReady = true;
+                        console.log("Firebase Auth listo. User ID:", userId);
+                        setupCartListener(); // Iniciar listener después de la autenticación
+                        document.getElementById('status-message').classList.add('hidden');
+                    } else {
+                        console.error("No se pudo autenticar.");
+                        const msgEl = document.getElementById('status-message');
+                        msgEl.textContent = "Error de autenticación. El carrito no se guardará.";
+                        msgEl.classList.remove('hidden');
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                const msgEl = document.getElementById('status-message');
+                msgEl.textContent = "Error grave al inicializar Firebase.";
+                msgEl.classList.remove('hidden');
+            }
+        }
+
+        // =========================================================================
+        // 2. LÓGICA DE FIREBASE FIRESTORE (CARRITO PERSISTENTE)
+        // =========================================================================
+
+        function getCartDocRef() {
+            if (!userId || !db) return null;
+            // Ruta: /artifacts/{appId}/users/{userId}/cartItems/currentCart
+            return doc(db, `artifacts/${appId}/users/${userId}/cartItems/currentCart`);
+        }
+
+        /**
+         * Guarda el carrito actual en Firestore.
+         */
+        async function saveCartToFirestore(newCart) {
+            if (!isAuthReady || !userId) {
+                console.warn("Auth no está listo. No se puede guardar el carrito.");
+                return;
+            }
+            const cartRef = getCartDocRef();
+            if (cartRef) {
+                try {
+                    // Guardamos el array de items
+                    await setDoc(cartRef, { items: newCart, lastUpdated: new Date() });
+                    console.log("Carrito guardado en Firestore.");
+                } catch (e) {
+                    console.error("Error al guardar el carrito:", e);
+                }
+            }
+        }
+
+        /**
+         * Configura el listener para escuchar cambios en el carrito en tiempo real.
+         */
+        function setupCartListener() {
+            if (!isAuthReady || !userId) return;
+
+            const cartRef = getCartDocRef();
+            if (cartRef) {
+                onSnapshot(cartRef, (doc) => {
+                    if (doc.exists()) {
+                        // Carga el carrito desde la base de datos
+                        const data = doc.data();
+                        cart = data.items || [];
+                        console.log("Carrito cargado desde Firestore:", cart);
+                    } else {
+                        // El documento no existe, inicializamos el carrito vacío
+                        cart = [];
+                        console.log("Documento de carrito no existe, inicializando vacío.");
+                    }
+                    renderCart(); // Renderiza la interfaz de usuario con los datos actualizados
+                }, (error) => {
+                    console.error("Error en el listener de carrito:", error);
+                });
+            }
+        }
+
+        // =========================================================================
+        // 3. DATOS DE PRODUCTOS Y ESTADO LOCAL DE LA APLICACIÓN
+        // =========================================================================
+
+        // Producto seleccionado actualmente para el modal
+        let selectedProduct = null;
+        let selectedOptions = { size: null, color: null };
+
+        // Lista de productos que coinciden con tu catálogo visual
+        const products = [
+            {
+                id: 1,
+                name: "Gothic Logo Tee",
+                price: 15.00,
+                description: "Camiseta oversized con logo gótico en relieve, 100% algodón orgánico de 300 GSM. Estilo premium y durabilidad superior.",
+                image: "camiseta_crema.jpg", // Usa el nombre de archivo del usuario
+                colors: [
+                    { name: "Cream", hex: "#f5f5dc", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1780&auto=format&fit=crop" },
+                    { name: "Black", hex: "#000000", image: "https://placehold.co/600x600/000000/ffffff?text=Gothic+Tee+Black" },
+                ],
+                sizes: ["S", "M", "L", "XL"],
+                tag: "Best Seller"
+            },
+            {
+                id: 2,
+                name: "Chrome logo Tee",
+                price: 15.00,
+                description: "Camiseta de algodón pesado con logo 'Chrome' serigrafiado. Un básico de la colección, ideal para layering.",
+                image: "camiseta_blanca.jpg",
+                colors: [
+                    { name: "White", hex: "#ffffff", image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1887&auto=format&fit=crop" },
+                    { name: "Ash Grey", hex: "#a0a0a0", image: "https://placehold.co/600x600/a0a0a0/ffffff?text=Chrome+Tee+Ash" },
+                ],
+                sizes: ["S", "M", "L", "XL"],
+                tag: null
+            },
+            {
+                id: 3,
+                name: "Chaos Patch Denim",
+                price: 35.00,
+                description: "Shorts de denim vintage con parches y bordados customizados. Ajuste relajado a la rodilla.",
+                image: "short.jpg",
+                colors: [
+                    { name: "Vintage Blue", hex: "#3b82f6", image: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=2070&auto=format&fit=crop" },
+                    { name: "Black Wash", hex: "#333333", image: "https://placehold.co/600x600/333333/ffffff?text=Denim+Black+Wash" },
+                ],
+                sizes: ["28", "30", "32", "34", "36"],
+                tag: "Limited"
+            },
+            {
+                id: 4,
+                name: "The Arkon Look",
+                price: 185.00,
+                description: "Set completo que incluye sudadera con capucha y pantalón jogger, ideal para un look total 'Maison Arkon'.",
+                image: "portada.jpg",
+                colors: [
+                    { name: "Graphite", hex: "#27272a", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop" },
+                    { name: "Off-White", hex: "#f3f4f6", image: "https://placehold.co/600x600/f3f4f6/000000?text=Arkon+Set+White" },
+                ],
+                sizes: ["M", "L", "XL"],
+                tag: null
+            },
+        ];
+
+        // =========================================================================
+        // 4. FUNCIONALIDAD DEL CATÁLOGO Y MODAL DE PRODUCTO
+        // =========================================================================
+
+        /**
+         * Renderiza las tarjetas de productos en la cuadrícula principal, reemplazando el HTML estático.
+         */
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(product => `
+                <div class="group cursor-pointer" data-product-id="${product.id}" onclick="openModal(${product.id})">
+                    <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
+                        <img src="${product.image}" class="p-0" alt="${product.name}"
+                            onerror="this.src='https://placehold.co/600x750/1a1a1a/ef4444?text=${product.name.replace(/ /g, '+')}';">
+                        ${product.tag ? `<div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">${product.tag}</div>` : ''}
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-lg uppercase">${product.name}</h3>
+                            <p class="text-sm text-gray-500 font-mono">${product.colors[0].name} / ${product.sizes.join(', ')}</p>
+                        </div>
+                        <span class="font-mono text-sm font-bold">$${product.price.toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Exponer al scope global para que el HTML pueda llamarlas
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.selectOption = selectOption;
+        window.addToCart = addToCart;
+
+        /**
+         * Abre el modal con los detalles del producto.
+         * @param {number} productId - ID del producto a mostrar.
+         */
+        function openModal(productId) {
+            selectedProduct = products.find(p => p.id === productId);
+            if (!selectedProduct) return;
+
+            // Inicializar opciones seleccionadas con el primer valor por defecto
+            selectedOptions = {
+                size: selectedProduct.sizes[0] || null,
+                color: selectedProduct.colors[0]?.name || null
+            };
+
+            const imageEl = document.getElementById('modal-product-image');
+            const nameEl = document.getElementById('modal-product-name');
+            const priceEl = document.getElementById('modal-product-price');
+            const descEl = document.getElementById('modal-product-description');
+            
+            // Llenar campos de texto
+            nameEl.textContent = selectedProduct.name;
+            priceEl.textContent = `$${selectedProduct.price.toFixed(2)}`;
+            descEl.textContent = selectedProduct.description;
+
+            // Renderizar selectores de color y talla
+            renderColorSelectors();
+            renderSizeSelectors();
+
+            // Sincronizar imagen y nombre de color inicial
+            updateModalImageAndColorName(selectedProduct.colors[0]);
+
+            // Mostrar modal
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // Previene scroll en el body
+            
+            // Reemplazar iconos de lucide dentro del modal
+            lucide.createIcons();
+        }
+
+        /**
+         * Cierra el modal de vista de producto.
+         */
+        function closeModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            selectedProduct = null;
+            selectedOptions = { size: null, color: null };
+        }
+
+        /**
+         * Actualiza la imagen principal y el texto del color seleccionado.
+         */
+        function updateModalImageAndColorName(color) {
+            const imageEl = document.getElementById('modal-product-image');
+            const colorNameEl = document.getElementById('selected-color-name');
+            
+            if (color) {
+                // Usar la imagen específica del color o la principal si no hay específica
+                imageEl.src = color.image || selectedProduct.image;
+                colorNameEl.textContent = color.name;
+                selectedOptions.color = color.name;
+            }
+            // Habilitar/Deshabilitar el botón si las opciones están listas
+            document.getElementById('add-to-cart-btn').disabled = !(selectedOptions.color && selectedOptions.size);
+        }
+
+
+        /**
+         * Renderiza los botones de selección de color.
+         */
+        function renderColorSelectors() {
+            const container = document.querySelector('#color-selector .flex');
+            container.innerHTML = selectedProduct.colors.map(color => `
+                <button
+                    onclick="selectOption('color', '${color.name}')"
+                    title="${color.name}"
+                    style="background-color: ${color.hex}; ${color.name === 'White' || color.name === 'Cream' || color.name === 'Off-White' ? 'border: 1px solid #333;' : ''}"
+                    class="w-8 h-8 rounded-full border-4 ${selectedOptions.color === color.name ? 'border-arkon-red ring-2 ring-arkon-red' : 'border-transparent hover:ring-2 hover:ring-gray-600'} transition duration-200"
+                    data-color-name="${color.name}"
+                    data-color-image="${color.image}"
+                ></button>
+            `).join('');
+            updateColorSelectionStyles(selectedOptions.color);
+        }
+
+        /**
+         * Renderiza los botones de selección de talla.
+         */
+        function renderSizeSelectors() {
+            const container = document.querySelector('#size-selector .flex');
+            container.innerHTML = selectedProduct.sizes.map(size => `
+                <button
+                    onclick="selectOption('size', '${size}')"
+                    class="py-2 px-4 rounded-lg border-2 font-mono text-sm transition duration-200
+                        ${selectedOptions.size === size ? 'bg-arkon-red text-arkon-white border-arkon-red shadow-md shadow-arkon-red/30' : 'bg-arkon-black text-gray-300 border-gray-700 hover:bg-[#1a1a1a]'}
+                    "
+                >${size}</button>
+            `).join('');
+            document.getElementById('selected-size-name').textContent = selectedOptions.size;
+        }
+
+        /**
+         * Actualiza el estado local y los estilos al seleccionar una opción.
+         */
+        function selectOption(type, value) {
+            selectedOptions[type] = value;
+
+            if (type === 'color') {
+                const selectedColor = selectedProduct.colors.find(c => c.name === value);
+                if (selectedColor) {
+                    updateModalImageAndColorName(selectedColor);
+                    updateColorSelectionStyles(value);
+                }
+            } else if (type === 'size') {
+                renderSizeSelectors(); // Volver a renderizar para actualizar el estilo del botón
+            }
+
+            // Validar que ambas opciones estén seleccionadas para habilitar el botón
+            document.getElementById('add-to-cart-btn').disabled = !(selectedOptions.color && selectedOptions.size);
+        }
+
+        /**
+         * Actualiza el estilo visual de los botones de color.
+         */
+        function updateColorSelectionStyles(selectedColorName) {
+            document.querySelectorAll('#color-selector button').forEach(button => {
+                const colorName = button.getAttribute('data-color-name');
+                if (colorName === selectedColorName) {
+                    button.classList.add('border-arkon-red', 'ring-2', 'ring-arkon-red');
+                    button.classList.remove('border-transparent', 'hover:ring-2', 'hover:ring-gray-600');
+                } else {
+                    button.classList.remove('border-arkon-red', 'ring-2', 'ring-arkon-red');
+                    button.classList.add('border-transparent', 'hover:ring-2', 'hover:ring-gray-600');
+                }
+            });
+        }
+        
+        // =========================================================================
+        // 5. FUNCIONALIDAD DEL CARRITO
+        // =========================================================================
+
+        /**
+         * Añade el producto seleccionado y sus opciones al carrito.
+         */
+        function addToCart() {
+            if (!selectedProduct || !selectedOptions.size || !selectedOptions.color) {
+                console.error("Opciones incompletas.");
+                return;
+            }
+
+            const item = {
+                id: crypto.randomUUID(), // ID único para el item del carrito
+                productId: selectedProduct.id,
+                name: selectedProduct.name,
+                price: selectedProduct.price,
+                image: selectedProduct.colors.find(c => c.name === selectedOptions.color)?.image || selectedProduct.image,
+                size: selectedOptions.size,
+                color: selectedOptions.color,
+                quantity: 1
+            };
+
+            // Verificar si ya existe un item con la misma talla y color
+            const existingItemIndex = cart.findIndex(
+                i => i.productId === item.productId && i.size === item.size && i.color === item.color
+            );
+
+            if (existingItemIndex > -1) {
+                // Si existe, incrementa la cantidad
+                cart[existingItemIndex].quantity += 1;
+            } else {
+                // Si no existe, añade el nuevo item
+                cart.push(item);
+            }
+
+            saveCartToFirestore(cart);
+            showNotification();
+            closeModal();
+            renderCart();
+        }
+        
+        /**
+         * Muestra una notificación temporal de éxito.
+         */
+        function showNotification() {
+            const notif = document.getElementById('notification');
+            notif.classList.remove('opacity-0', 'pointer-events-none');
+            notif.classList.add('opacity-100');
+            setTimeout(() => {
+                notif.classList.remove('opacity-100');
+                notif.classList.add('opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
+
+        /**
+         * Renderiza los items del carrito y actualiza el total.
+         */
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const totalEl = document.getElementById('cart-total');
+            const countEl = document.getElementById('cart-count');
+            const emptyMsg = document.getElementById('empty-cart-message');
+
+            if (cart.length === 0) {
+                container.innerHTML = '';
+                emptyMsg.classList.remove('hidden');
+                totalEl.textContent = `$0.00`;
+                countEl.textContent = '0';
+                return;
+            }
+
+            emptyMsg.classList.add('hidden');
+
+            const itemsHtml = cart.map(item => `
+                <div class="flex items-center space-x-4 p-3 bg-[#1a1a1a] rounded-lg shadow-inner">
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md border border-gray-700">
+                    <div class="flex-grow">
+                        <p class="font-semibold text-arkon-white">${item.name}</p>
+                        <p class="text-xs text-gray-500 font-mono">Talla: ${item.size} | Color: ${item.color}</p>
+                        <p class="text-lg font-bold text-arkon-red mt-1">$${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input
+                            type="number"
+                            value="${item.quantity}"
+                            min="1"
+                            class="w-14 text-center border border-gray-700 bg-arkon-black rounded-lg p-1 text-gray-300"
+                            onchange="updateQuantity('${item.id}', this.value)"
+                        >
+                        <button onclick="removeItem('${item.id}')" class="text-gray-500 hover:text-arkon-red transition duration-200">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = itemsHtml;
+            
+            // Reemplazar iconos de lucide después de inyectar contenido
+            lucide.createIcons();
+
+            // Calcular y mostrar el total
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            totalEl.textContent = `$${total.toFixed(2)}`;
+
+            // Calcular y mostrar la cantidad total de items
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            countEl.textContent = totalItems.toString();
+        }
+
+        window.updateQuantity = updateQuantity;
+        window.removeItem = removeItem;
+
+        /**
+         * Actualiza la cantidad de un item en el carrito.
+         */
+        function updateQuantity(itemId, quantity) {
+            const newQuantity = parseInt(quantity);
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                // Si la cantidad es inválida o menor a 1, eliminamos el item
+                removeItem(itemId);
+                return;
+            }
+            
+            const itemIndex = cart.findIndex(item => item.id === itemId);
+            if (itemIndex > -1) {
+                cart[itemIndex].quantity = newQuantity;
+                saveCartToFirestore(cart);
+            }
+        }
+
+        /**
+         * Elimina un item del carrito.
+         */
+        function removeItem(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            saveCartToFirestore(cart);
+        }
+
+        /**
+         * Abre/cierra el sidebar del carrito.
+         */
+        function openCart() {
+            document.getElementById('cart-sidebar').classList.remove('translate-x-full');
+            document.body.classList.add('overflow-hidden');
+            renderCart(); // Asegurar que el carrito se renderice al abrir
+        }
+
+        function closeCart() {
+            document.getElementById('cart-sidebar').classList.add('translate-x-full');
+            document.body.classList.remove('overflow-hidden');
+        }
+        
+        // Asignar el evento al botón de la barra de navegación
+        document.getElementById('open-cart-btn').onclick = openCart;
+        window.closeCart = closeCart;
+
+
+        /**
+         * Simula el proceso de checkout/pago.
+         */
+        function checkout() {
+            if (cart.length === 0) {
+                 // Usamos window.prompt para simular una 'modal' simple sin usar alert/confirm
+                 window.prompt("Tu carrito está vacío. Agrega productos antes de pagar.");
+                 return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
+
+            // Resumen de la orden
+            const cartSummary = cart.map(item => `\n- ${item.quantity}x ${item.name} (${item.color}/${item.size})`).join('');
+            
+            let message = "¡Felicitaciones! Has iniciado el proceso de pago. \n\n";
+            message += `RESUMEN DE ORDEN (Total: $${total}):\n${cartSummary}\n\n`;
+            message += "En un sitio web real, esto te llevaría a una pasarela de pago segura (ej: Stripe, PayPal).";
+
+            // Usamos window.prompt para simular una 'modal' de confirmación sin usar alert/confirm
+            window.prompt(message, "Continuar al Pago");
+        }
+        
+        // =========================================================================
+        // 6. INICIO DE LA APLICACIÓN
+        // =========================================================================
+        window.onload = () => {
+            renderProducts(); // Renderiza el catálogo
+            initializeFirebase(); // Inicializar Firebase y Autenticación
+            lucide.createIcons(); // Inicializar íconos de Lucide
+        };
     </script>
 </body>
 </html>
