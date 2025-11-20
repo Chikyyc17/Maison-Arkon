@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAISON ARKON | Streetwear Luxury</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                        display: ['Archivo Black', 'sans-serif'],
+                    },
+                    colors: {
+                        'arkon-black': '#09090b',
+                        'arkon-white': '#fafafa',
+                        'arkon-red': '#ef4444',
+                    },
+                    animation: {
+                        'marquee': 'marquee 20s linear infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html { scroll-behavior: smooth; background-color: #09090b; }
+        body { color: #fafafa; overflow-x: hidden; }
+        ::selection { background-color: #ef4444; color: white; }
+        
+        /* Efecto Zoom en Imagenes */
+        .product-image-container { overflow: hidden; position: relative; }
+        .product-image-container img { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
+        .group:hover .product-image-container img { transform: scale(1.05); }
+
+        /* Botón hover */
+        .btn-hover-effect { position: relative; overflow: hidden; transition: color 0.3s; }
+        .btn-hover-effect::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background-color: #fff; transition: left 0.3s ease-in-out; z-index: -1;
+        }
+        .btn-hover-effect:hover::before { left: 0; }
+        .btn-hover-effect:hover { color: black; }
+    </style>
+</head>
+<body class="font-sans bg-arkon-black text-arkon-white">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-arkon-black/80 backdrop-blur-md border-b border-white/10">
+        <div class="hidden md:flex gap-6 font-mono text-xs uppercase tracking-wider">
+            <a href="#shop" class="hover:text-arkon-red transition-colors">Shop All</a>
+            <a href="#" class="hover:text-arkon-red transition-colors">New Arrivals</a>
+        </div>
+        
+        <!-- Titulo Logo -->
+        <a href="#" class="font-display text-2xl md:text-3xl tracking-tighter uppercase absolute left-1/2 transform -translate-x-1/2">
+            Maison Arkon
+        </a>
+
+        <div class="flex gap-6 items-center">
+            <i data-lucide="shopping-bag" class="w-5 h-5 cursor-pointer hover:text-arkon-red transition-colors"></i>
+            <i data-lucide="menu" class="w-6 h-6 md:hidden cursor-pointer"></i>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION (FOTO PORTADA) -->
+    <header class="relative h-screen w-full overflow-hidden flex items-center justify-center">
+        <div class="absolute inset-0 z-0">
+            <!-- AQUÍ VA TU FOTO DEL MODELO -->
+            <img src="portada.jpg" 
+                 class="w-full h-full object-cover object-top opacity-60" 
+                 alt="Maison Arkon Campaign"
+                 onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'"> <!-- Fallback por si no encuentra la foto -->
+            <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/30 via-transparent to-arkon-black"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-5xl">
+            <span class="inline-block py-1 px-3 border border-white/30 rounded-full font-mono text-xs uppercase mb-6 backdrop-blur-sm">
+                Fall / Winter 2024
+            </span>
+            <h1 class="font-display text-5xl md:text-8xl lg:text-9xl uppercase leading-none mb-6 tracking-tight drop-shadow-xl">
+                Urban <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Rituals</span>
+            </h1>
+            <div class="mt-8">
+                <a href="#shop" class="btn-hover-effect border border-white px-8 py-4 text-sm font-bold uppercase tracking-widest inline-block">
+                    Comprar Ahora
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- TEXTO EN MOVIMIENTO -->
+    <div class="bg-white text-black py-3 overflow-hidden whitespace-nowrap border-y border-black">
+        <div class="inline-block animate-marquee font-display text-xl uppercase tracking-tighter">
+            New Drop Available • Worldwide Shipping • Maison Arkon Studios • Limited Quantities • New Drop Available •
+        </div>
+    </div>
+
+    <!-- SECCIÓN DESTACADA (FOTO ACCESORIOS) -->
+    <section class="py-0">
+        <div class="grid grid-cols-1 md:grid-cols-2 bg-[#121212]">
+            <div class="p-12 md:p-24 flex flex-col justify-center border-r border-white/10">
+                <h2 class="font-display text-4xl md:text-5xl uppercase mb-6 leading-none">Streetwear <br> Redefined.</h2>
+                <p class="font-sans text-gray-400 leading-relaxed mb-8 max-w-md">
+                    Calidad sobre cantidad. Nuestras prendas están diseñadas para destacar en el caos urbano.
+                </p>
+                <a href="#shop" class="text-arkon-red font-mono text-sm uppercase hover:underline underline-offset-4 decoration-1">Ver Catálogo -></a>
+            </div>
+            <div class="h-[50vh] md:h-auto relative overflow-hidden">
+                <!-- AQUÍ VA TU FOTO DE ACCESORIOS -->
+                <img src="accesorios.jpg" 
+                     class="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
+                     alt="Flatlay accesorios"
+                     onerror="this.src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2070&auto=format&fit=crop'">
+            </div>
+        </div>
+    </section>
+
+    <!-- TIENDA / GRID DE PRODUCTOS -->
+    <section id="shop" class="py-24 px-6 md:px-12 max-w-8xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-white/10 pb-6">
+            <h2 class="font-display text-4xl uppercase tracking-tighter">Catálogo</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+            
+            <!-- Producto 1: Camiseta Crema -->
+            <div class="group cursor-pointer">
+                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
+                    <!-- AQUÍ VA LA CAMISETA CREMA -->
+                    <img src="camiseta_crema.jpg" class="p-0" alt="Gothic Tee"
+                         onerror="this.src='https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1780&auto=format&fit=crop'">
+                    <div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">Best Seller</div>
+                </div>
+                <div class="flex justify-between items-start">
+                    <div><h3 class="font-bold text-lg uppercase">Gothic Logo Tee</h3><p class="text-sm text-gray-500 font-mono">Cream / Oversized</p></div>
+                    <span class="font-mono text-sm font-bold">$15.00</span>
+                </div>
+            </div>
+
+            <!-- Producto 2: Camiseta Blanca -->
+            <div class="group cursor-pointer">
+                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
+                    <!-- AQUÍ VA LA CAMISETA BLANCA -->
+                    <img src="camiseta_blanca.jpg" class="p-0" alt="Chrome Tee"
+                         onerror="this.src='https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1887&auto=format&fit=crop'">
+                </div>
+                <div class="flex justify-between items-start">
+                    <div><h3 class="font-bold text-lg uppercase">Chrome logo Tee</h3><p class="text-sm text-gray-500 font-mono">White / Heavy Cotton</p></div>
+                    <span class="font-mono text-sm font-bold">$15.00</span>
+                </div>
+            </div>
+
+            <!-- Producto 3: Shorts -->
+            <div class="group cursor-pointer">
+                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
+                    <!-- AQUÍ VA EL SHORT -->
+                    <img src="short.jpg" class="p-0" alt="Patch Shorts"
+                         onerror="this.src='https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=2070&auto=format&fit=crop'">
+                    <div class="absolute top-3 left-3 bg-white text-black text-[10px] font-bold px-2 py-1 uppercase">Limited</div>
+                </div>
+                <div class="flex justify-between items-start">
+                    <div><h3 class="font-bold text-lg uppercase">Chaos Patch Denim</h3><p class="text-sm text-gray-500 font-mono">Vintage Blue / Custom</p></div>
+                    <span class="font-mono text-sm font-bold">$35.00</span>
+                </div>
+            </div>
+
+             <!-- Producto 4: Outfit Completo (Reusando Portada) -->
+             <div class="group cursor-pointer">
+                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
+                    <!-- AQUÍ REPETIMOS PORTADA O FOTO FULL -->
+                    <img src="portada.jpg" class="p-0" alt="Full Outfit"
+                         onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'">
+                </div>
+                <div class="flex justify-between items-start">
+                    <div><h3 class="font-bold text-lg uppercase">The Arkon Look</h3><p class="text-sm text-gray-500 font-mono">Full Silhouette</p></div>
+                    <span class="font-mono text-sm font-bold">$185.00</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#050505] border-t border-white/10 pt-20 pb-8 px-6 text-center md:text-left">
+        <div class="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h2 class="font-display text-2xl uppercase mb-2">Maison Arkon</h2>
+                <p class="text-gray-500 text-sm">Streetwear de lujo.</p>
+            </div>
+            <div class="md:text-right text-gray-600 text-xs font-mono uppercase">
+                &copy; 2024 Maison Arkon.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
