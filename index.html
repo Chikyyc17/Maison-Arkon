@@ -35,6 +35,7 @@
                         'marquee': 'marquee 20s linear infinite',
                         'modal-in': 'modal-in 0.3s ease-out forwards',
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         marquee: {
@@ -99,19 +100,12 @@
             border: 1px solid #333;
         }
 
-        /* Estilos para la galería */
-        .gallery-thumb {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            opacity: 0.6;
-            border: 2px solid transparent;
+        /* Estilos para Inputs del Formulario VIP */
+        .arkon-input {
+            @apply w-full bg-[#0c0c0e] border border-white/10 text-white p-3 rounded focus:outline-none focus:border-arkon-red transition-colors font-mono text-sm;
         }
-        .gallery-thumb.active {
-            opacity: 1;
-            border-color: #ef4444;
-        }
-        .gallery-thumb:hover {
-            opacity: 1;
+        .arkon-label {
+            @apply block text-xs font-mono uppercase text-gray-500 mb-1 tracking-widest;
         }
     </style>
 </head>
@@ -119,9 +113,15 @@
 
     <!-- NAVBAR -->
     <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-arkon-black/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
-        <div class="hidden md:flex gap-6 font-mono text-xs uppercase tracking-wider">
+        <div class="hidden md:flex gap-6 font-mono text-xs uppercase tracking-wider items-center">
             <button onclick="navigateTo('shop')" class="hover:text-arkon-red transition-colors">Shop All</button>
             <button onclick="navigateTo('shop', 'new')" class="hover:text-arkon-red transition-colors">New Arrivals</button>
+            
+            <!-- Botón de Login / Perfil -->
+            <button id="nav-auth-btn" onclick="openAuthModal()" class="ml-4 px-4 py-1 border border-white/20 rounded-full hover:bg-white hover:text-black transition-all flex items-center gap-2">
+                <i data-lucide="user" class="w-3 h-3"></i>
+                <span id="nav-auth-text">Join Arkon</span>
+            </button>
         </div>
         
         <button onclick="navigateTo('home')" class="font-display text-2xl md:text-3xl tracking-tighter uppercase absolute left-1/2 transform -translate-x-1/2 hover:text-gray-300 transition-colors">
@@ -223,17 +223,58 @@
         <div id="no-results" class="hidden text-center py-20"><p class="font-mono text-gray-500">No se encontraron productos en esta categoría.</p></div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="bg-[#050505] border-t border-white/10 pt-20 pb-8 px-6 text-center md:text-left mt-auto">
-        <div class="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-                <h2 class="font-display text-2xl uppercase mb-2">Maison Arkon</h2>
-                <p class="text-gray-500 text-sm">Streetwear de lujo. ID: <span id="user-id-display" class="font-mono text-xs text-gray-400">...</span></p>
-                <div id="status-message" class="mt-2 text-xs text-red-400 hidden"></div>
+    <!-- FOOTER MEJORADO -->
+    <footer class="bg-[#050505] border-t border-white/10 pt-20 pb-10 px-6 mt-auto text-sm">
+        <div class="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 mb-16">
+            
+            <!-- Columna 1: Conócenos -->
+            <div class="space-y-4">
+                <h2 class="font-display text-2xl uppercase tracking-tight text-white">Maison Arkon</h2>
+                <p class="text-gray-500 leading-relaxed font-sans max-w-xs">
+                    Estilo urbano y calidad premium. Redefiniendo el streetwear de lujo para aquellos que caminan su propio camino.
+                </p>
+                <p class="text-xs text-gray-600 font-mono">ID Sesión: <span id="user-id-display">...</span></p>
+                <div id="status-message" class="text-xs text-red-400 hidden"></div>
             </div>
-            <div class="md:text-right text-gray-600 text-xs font-mono uppercase">
-                &copy; 2024 Maison Arkon.
+
+            <!-- Columna 2: Centro de Ayuda -->
+            <div class="space-y-6">
+                <h3 class="font-bold text-white uppercase tracking-widest text-xs font-mono">Centro de Ayuda</h3>
+                <p class="text-gray-400">¿Tienes dudas antes de comprar?</p>
+                
+                <div class="flex flex-col gap-4 items-start">
+                    <a href="https://wa.me/584165530268" target="_blank" class="flex items-center gap-3 text-gray-300 hover:text-white hover:translate-x-1 transition-all duration-300 group">
+                        <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#25D366] transition-colors">
+                            <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        </div>
+                        <span class="font-medium">Chatea con nosotros</span>
+                    </a>
+                    
+                    <a href="#" class="flex items-center gap-3 text-gray-300 hover:text-white hover:translate-x-1 transition-all duration-300 group">
+                        <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-pink-600 transition-colors">
+                            <i data-lucide="instagram" class="w-4 h-4"></i>
+                        </div>
+                        <span class="font-medium">Síguenos @MaisonArkon</span>
+                    </a>
+                </div>
             </div>
+
+            <!-- Columna 3: Navegación Rápida -->
+            <div class="space-y-6">
+                <h3 class="font-bold text-white uppercase tracking-widest text-xs font-mono">Navegación</h3>
+                <ul class="space-y-3 text-gray-400 font-sans">
+                    <li><button onclick="navigateTo('shop')" class="hover:text-arkon-red transition-colors">Shop All</button></li>
+                    <li><button onclick="navigateTo('shop', 'new')" class="hover:text-arkon-red transition-colors">New Arrivals</button></li>
+                    <li><a href="#" class="hover:text-arkon-red transition-colors">Términos y Condiciones</a></li>
+                    <li><a href="#" class="hover:text-arkon-red transition-colors">Política de Privacidad</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 font-mono uppercase">
+            <p>&copy; 2024 Maison Arkon. Todos los derechos reservados.</p>
+            <p class="mt-2 md:mt-0">Designed in Vzla.</p>
         </div>
     </footer>
 
@@ -249,29 +290,19 @@
                 </button>
 
                 <div class="grid md:grid-cols-2 h-full">
-                    
-                    <!-- Columna Izquierda: Galería Visual -->
                     <div class="relative bg-[#0c0c0e] h-full flex flex-col">
-                        <!-- Imagen Principal -->
-                        <div class="w-full aspect-[4/5] md:h-[600px] bg-[#151515] overflow-hidden relative">
+                        <div class="w-full aspect-[4/5] md:h-full bg-[#151515] overflow-hidden relative">
                             <img id="modal-product-image" src="" class="w-full h-full object-cover object-center transition-opacity duration-300">
                         </div>
-                        
-                        <!-- Galería de Miniaturas -->
-                        <div id="modal-gallery" class="flex gap-2 p-4 overflow-x-auto bg-[#09090b] border-t border-white/5">
-                            <!-- JS inyectará las miniaturas aquí -->
-                        </div>
+                        <div id="modal-gallery" class="hidden"></div> 
                     </div>
 
-                    <!-- Columna Derecha: Información y Compra -->
                     <div class="p-6 md:p-12 flex flex-col h-full overflow-y-auto">
                         <div class="mb-auto">
                             <h2 id="modal-product-name" class="font-display text-4xl md:text-5xl uppercase text-arkon-white mb-2 leading-none"></h2>
                             <p id="modal-product-price" class="font-mono text-2xl text-arkon-red mb-6"></p>
-                            
                             <p id="modal-product-description" class="text-gray-400 font-sans leading-relaxed mb-8 text-sm md:text-base"></p>
 
-                            <!-- AI Stylist -->
                             <div class="mb-8 border-y border-white/10 py-4">
                                 <button id="ai-stylist-btn" onclick="askGeminiStylist()" class="group/ai w-full flex justify-between items-center text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
                                     <span class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> Consultar Estilista Virtual</span>
@@ -282,13 +313,11 @@
                                 </div>
                             </div>
 
-                            <!-- Selector de Color -->
                             <div class="mb-8">
                                 <h3 class="font-mono text-xs uppercase text-gray-500 mb-3 tracking-widest">Color Seleccionado: <span id="selected-color-name" class="text-white"></span></h3>
                                 <div id="color-selector" class="flex flex-wrap gap-3"></div>
                             </div>
 
-                            <!-- Selector de Talla -->
                             <div class="mb-8">
                                 <div class="flex justify-between items-end mb-3">
                                     <h3 class="font-mono text-xs uppercase text-gray-500 tracking-widest">Talla</h3>
@@ -298,9 +327,7 @@
                             </div>
                         </div>
 
-                        <!-- Botón de Acción con ID correcto -->
                         <div class="mt-8 pt-6 border-t border-white/10 sticky bottom-0 bg-[#09090b] md:relative md:bg-transparent md:border-t-0 md:pt-0">
-                            <!-- NOTE: El onclick llama a addToCart directamente -->
                             <button id="add-to-cart-btn" onclick="addToCart()" class="btn-primary w-full py-4 text-lg uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span>Añadir al Carrito</span>
                                 <i data-lucide="arrow-right" class="w-5 h-5"></i>
@@ -309,11 +336,45 @@
                     </div>
                 </div>
                 
-                <!-- Feedback Visual (Toast) -->
                 <div id="notification" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-arkon-red text-white py-3 px-6 rounded shadow-xl transition-all duration-300 opacity-0 pointer-events-none z-[60] font-mono text-sm uppercase tracking-wide">
                     Producto Añadido Correctamente
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL DE REGISTRO / CLUB VIP (NUEVO) -->
+    <!-- ========================================================================= -->
+    <div id="auth-modal" class="fixed inset-0 bg-arkon-black/95 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-[#0c0c0e] border border-white/10 p-8 rounded-xl relative shadow-2xl animate-modal-in">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            
+            <div class="text-center mb-8">
+                <h2 class="font-display text-3xl uppercase tracking-tight text-white mb-2">Join The Club</h2>
+                <p class="text-gray-400 text-sm font-sans">Acceso exclusivo a drops y checkout express.</p>
+            </div>
+
+            <form id="auth-form" onsubmit="saveUser(event)">
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="arkon-label">Nombre Completo</label>
+                        <input type="text" id="auth-name" required placeholder="Ej. Arkon User" class="arkon-input">
+                    </div>
+                    <div>
+                        <label class="arkon-label">WhatsApp</label>
+                        <input type="tel" id="auth-phone" required placeholder="Ej. 58412..." class="arkon-input">
+                    </div>
+                    <div>
+                        <label class="arkon-label">Email</label>
+                        <input type="email" id="auth-email" required placeholder="Ej. user@arkon.com" class="arkon-input">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary w-full text-center py-3 uppercase tracking-widest text-sm">
+                    Unirme al Club
+                </button>
+            </form>
+            <p class="text-[10px] text-gray-600 text-center mt-4">Tus datos se guardan localmente para agilizar tus compras.</p>
         </div>
     </div>
 
@@ -355,8 +416,59 @@
         
         let db; let auth; let userId = null; let isAuthReady = false; 
         
-        // 1. ARRAY DEL CARRITO (Estado Global)
         let cart = [];
+        // Bandera para saber si el usuario estaba intentando comprar
+        let pendingCheckout = false;
+
+        // =========================================================================
+        // LÓGICA DE USUARIO / CLUB VIP (LOCALSTORAGE)
+        // =========================================================================
+        
+        function checkUserSession() {
+            const userProfile = JSON.parse(localStorage.getItem('arkon_user_profile'));
+            if (userProfile) {
+                // Actualizar UI del Navbar
+                const btnText = document.getElementById('nav-auth-text');
+                btnText.textContent = `Hola, ${userProfile.name.split(' ')[0]}`;
+                document.getElementById('nav-auth-btn').onclick = null; // Deshabilitar modal si ya está logueado (o abrir perfil)
+            }
+        }
+
+        // Exponer funciones al scope global para el HTML
+        window.openAuthModal = () => {
+            document.getElementById('auth-modal').classList.remove('hidden');
+        };
+
+        window.closeAuthModal = () => {
+            document.getElementById('auth-modal').classList.add('hidden');
+            pendingCheckout = false; // Resetear bandera si cierra sin registrarse
+        };
+
+        window.saveUser = (event) => {
+            event.preventDefault();
+            const name = document.getElementById('auth-name').value;
+            const phone = document.getElementById('auth-phone').value;
+            const email = document.getElementById('auth-email').value;
+
+            if(name && phone && email) {
+                const profile = { name, phone, email, joined: new Date().toISOString() };
+                localStorage.setItem('arkon_user_profile', JSON.stringify(profile));
+                
+                checkUserSession(); // Actualizar UI
+                closeAuthModal();
+                
+                // Si venía del checkout, reanudar compra automáticamente
+                if(pendingCheckout) {
+                    checkout();
+                } else {
+                    alert("¡Bienvenido al Club Arkon!");
+                }
+            }
+        };
+
+        // =========================================================================
+        // FIREBASE SETUP
+        // =========================================================================
 
         async function initializeFirebase() {
             try {
@@ -379,29 +491,26 @@
         const products = [
             { 
                 id: 1, name: "Gothic Logo Tee", price: 15.00, category: "Camisas", description: "Camiseta oversized con logo gótico.", 
-                image: "camiseta_crema.jpg", // Imagen Principal
-                images: ["camiseta_crema.jpg", "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1780", "https://placehold.co/600x750/1a1a1a/ef4444?text=Detail+Shot", "https://placehold.co/600x750/1a1a1a/ef4444?text=Back+View"], 
-                colors: [{ name: "Cream", hex: "#f5f5dc", image: "camiseta_crema.jpg" }, { name: "Black", hex: "#000", image: "https://placehold.co/600x600/000/fff" }], 
+                image: "camiseta_crema.jpg", 
+                colors: [{ name: "Cream", hex: "#f5f5dc" }, { name: "Black", hex: "#000" }], 
                 sizes: ["S", "M", "L", "XL"], tag: "Best Seller" 
             },
             { 
                 id: 2, name: "Chrome logo Tee", price: 15.00, category: "Camisas", description: "Camiseta algodón pesado logo Chrome.", 
                 image: "camiseta_blanca.jpg", 
-                images: ["camiseta_blanca.jpg", "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a", "https://placehold.co/600x750/1a1a1a/fff?text=Back+View"],
-                colors: [{ name: "White", hex: "#fff", image: "camiseta_blanca.jpg" }], 
+                colors: [{ name: "White", hex: "#fff" }], 
                 sizes: ["S", "M", "L", "XL"], tag: null 
             },
             { 
                 id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Shorts", description: "Shorts denim vintage con parches.", 
                 image: "short.jpg",
-                images: ["short.jpg", "https://images.unsplash.com/photo-1591195853828-11db59a44f6b", "https://placehold.co/600x750/1a1a1a/3b82f6?text=Detail"],
-                colors: [{ name: "Vintage Blue", hex: "#3b82f6", image: "short.jpg" }], 
+                colors: [{ name: "Vintage Blue", hex: "#3b82f6" }], 
                 sizes: ["28", "30", "32"], tag: "Limited" 
             },
-            { id: 5, name: "Cargo Tech Bermuda", price: 45.00, category: "Bermudas", description: "Bermuda técnica negra.", image: "https://images.unsplash.com/photo-1696541014392-540c490a0279", images: ["https://images.unsplash.com/photo-1696541014392-540c490a0279"], colors: [{ name: "Black Matte", hex: "#111", image: "https://images.unsplash.com/photo-1696541014392-540c490a0279" }], sizes: ["30", "32", "34"], tag: "New" },
-            { id: 6, name: "Arkon Core Hoodie", price: 85.00, category: "Hoodies", description: "Hoodie heavyweight 500GSM.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7", images: ["https://images.unsplash.com/photo-1556821840-3a63f95609a7"], colors: [{ name: "Ash Grey", hex: "#888", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7" }], sizes: ["M", "L", "XL"], tag: null },
-            { id: 4, name: "The Arkon Look", price: 185.00, category: "Monos", description: "Set completo sudadera y jogger.", image: "portada.jpg", images: ["portada.jpg"], colors: [{ name: "Graphite", hex: "#27272a", image: "portada.jpg" }], sizes: ["M", "L", "XL"], tag: "Bundle" },
-            { id: 7, name: "Nylon Track Pants", price: 65.00, category: "Monos", description: "Pantalones de nylon estilo retro.", image: "https://images.unsplash.com/photo-1552160753-117159d7419f", images: ["https://images.unsplash.com/photo-1552160753-117159d7419f"], colors: [{ name: "Navy", hex: "#000080", image: "https://images.unsplash.com/photo-1552160753-117159d7419f" }], sizes: ["S", "M", "L"], tag: null }
+            { id: 5, name: "Cargo Tech Bermuda", price: 45.00, category: "Bermudas", description: "Bermuda técnica negra.", image: "https://images.unsplash.com/photo-1696541014392-540c490a0279", colors: [{ name: "Black Matte", hex: "#111" }], sizes: ["30", "32", "34"], tag: "New" },
+            { id: 6, name: "Arkon Core Hoodie", price: 85.00, category: "Hoodies", description: "Hoodie heavyweight 500GSM.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7", colors: [{ name: "Ash Grey", hex: "#888" }], sizes: ["M", "L", "XL"], tag: null },
+            { id: 4, name: "The Arkon Look", price: 185.00, category: "Monos", description: "Set completo sudadera y jogger.", image: "portada.jpg", colors: [{ name: "Graphite", hex: "#27272a" }], sizes: ["M", "L", "XL"], tag: "Bundle" },
+            { id: 7, name: "Nylon Track Pants", price: 65.00, category: "Monos", description: "Pantalones de nylon estilo retro.", image: "https://images.unsplash.com/photo-1552160753-117159d7419f", colors: [{ name: "Navy", hex: "#000080" }], sizes: ["S", "M", "L"], tag: null }
         ];
 
         let selectedProduct = null; let selectedOptions = { size: null, color: null };
@@ -426,7 +535,7 @@
         };
 
         function createProductCard(product) {
-            return `<div class="group cursor-pointer animate-fade-in" onclick="openModal(${product.id})">
+            return `<div class="group cursor-pointer animate-fade-in" onclick="openModal(${product.id}, this)">
                 <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
                     <img src="${product.image}" class="p-0 h-full w-full object-cover" alt="${product.name}" onerror="this.src='https://placehold.co/600x750/1a1a1a/ef4444?text=Arkon'">
                     ${product.tag ? `<div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">${product.tag}</div>` : ''}
@@ -438,26 +547,25 @@
             </div>`;
         }
 
-        // =========================================================================
-        // LÓGICA MODAL
-        // =========================================================================
-        window.openModal = (id) => {
+        // MODAL
+        window.openModal = (id, cardElement) => {
             selectedProduct = products.find(p => p.id === id); if(!selectedProduct) return;
             selectedOptions = { size: null, color: selectedProduct.colors[0].name };
             
-            // Cargar Datos Básicos
             document.getElementById('modal-product-name').textContent = selectedProduct.name;
             document.getElementById('modal-product-price').textContent = `$${selectedProduct.price.toFixed(2)}`;
             document.getElementById('modal-product-description').textContent = selectedProduct.description;
             
-            // Imagen Principal
-            document.getElementById('modal-product-image').src = selectedProduct.image;
+            let realImageSrc = selectedProduct.image;
+            if (cardElement) {
+                const imgTag = cardElement.querySelector('img');
+                if (imgTag) {
+                    realImageSrc = imgTag.src;
+                }
+            }
+            document.getElementById('modal-product-image').src = realImageSrc;
             
-            // Renderizar Galería y Selectores
-            renderGallery();
             renderSelectors(); 
-            
-            // Reset UI States
             document.getElementById('ai-stylist-response').classList.add('hidden');
             document.getElementById('ai-stylist-btn').disabled = false;
             document.getElementById('product-modal').classList.remove('hidden');
@@ -467,26 +575,7 @@
 
         window.closeModal = () => { document.getElementById('product-modal').classList.add('hidden'); document.body.classList.remove('overflow-hidden'); };
 
-        function renderGallery() {
-            const galleryEl = document.getElementById('modal-gallery');
-            const images = selectedProduct.images || [selectedProduct.image]; // Fallback
-            
-            galleryEl.innerHTML = images.map((imgSrc, index) => `
-                <div onclick="changeMainImage('${imgSrc}', this)" 
-                     class="gallery-thumb w-20 h-24 flex-shrink-0 bg-[#151515] rounded overflow-hidden border border-transparent ${index === 0 ? 'active' : ''}">
-                    <img src="${imgSrc}" class="w-full h-full object-cover">
-                </div>
-            `).join('');
-        }
-
-        window.changeMainImage = (src, thumb) => {
-            document.getElementById('modal-product-image').src = src;
-            document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
-            thumb.classList.add('active');
-        };
-
         function renderSelectors() {
-            // Colores
             const colorContainer = document.getElementById('color-selector');
             colorContainer.innerHTML = selectedProduct.colors.map(c => 
                 `<button onclick="selectOption('color', '${c.name}')" 
@@ -497,7 +586,6 @@
             ).join('');
             document.getElementById('selected-color-name').textContent = selectedOptions.color;
 
-            // Tallas
             const sizeContainer = document.getElementById('size-selector');
             sizeContainer.innerHTML = selectedProduct.sizes.map(s => 
                 `<button onclick="selectOption('size', '${s}')" 
@@ -509,7 +597,6 @@
                 </button>`
             ).join('');
             
-            // Validar botón comprar (visual)
             const addBtn = document.getElementById('add-to-cart-btn');
             if (selectedOptions.size) {
                 addBtn.disabled = false;
@@ -524,14 +611,10 @@
 
         window.selectOption = (type, val) => {
             selectedOptions[type] = val;
-            if(type === 'color') {
-                const col = selectedProduct.colors.find(c => c.name === val);
-                if (col.image) document.getElementById('modal-product-image').src = col.image;
-            }
             renderSelectors();
         };
 
-        // GEMINI AI STYLIST
+        // GEMINI AI
         window.askGeminiStylist = async () => {
             if (!selectedProduct) return;
             const btn = document.getElementById('ai-stylist-btn');
@@ -559,17 +642,13 @@
             }
         };
 
-        // =========================================================================
-        // 2. LÓGICA DE AÑADIR AL CARRITO (DETECTAR Y GUARDAR)
-        // =========================================================================
+        // CART LOGIC
         window.addToCart = () => {
-            // Validación: ¿Eligió talla?
             if(!selectedOptions.size) { 
                 alert("⚠️ Por favor selecciona una talla antes de añadir."); 
                 return; 
             }
 
-            // Crear Objeto de Producto para el Carrito
             const item = { 
                 id: crypto.randomUUID(), 
                 productId: selectedProduct.id, 
@@ -581,7 +660,6 @@
                 quantity: 1 
             };
 
-            // Lógica de acumulación (si ya existe, suma 1)
             const existing = cart.find(i => i.productId === item.productId && i.size === item.size && i.color === item.color);
             if(existing) {
                 existing.quantity++; 
@@ -589,19 +667,16 @@
                 cart.push(item);
             }
 
-            // Guardar y Actualizar
             saveCartToFirestore(cart); 
-            showNotification(); // 3. Feedback Visual
+            showNotification();
             closeModal(); 
             renderCart();
         };
 
-        // Feedback Visual (Toast Notification)
         function showNotification() { 
             const n = document.getElementById('notification'); 
             n.classList.remove('opacity-0', 'pointer-events-none'); 
             n.classList.add('opacity-100'); 
-            // Ocultar después de 2 segundos
             setTimeout(() => {
                 n.classList.remove('opacity-100'); 
                 n.classList.add('opacity-0', 'pointer-events-none');
@@ -644,25 +719,33 @@
         };
 
         // =========================================================================
-        // 4. CONEXIÓN CON WHATSAPP CHECKOUT
+        // CHECKOUT MEJORADO CON CLUB VIP INTEGRADO
         // =========================================================================
         window.checkout = () => {
             if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
             
-            // Número especificado en los requerimientos
+            // 1. Verificar si es miembro del club
+            const userProfile = JSON.parse(localStorage.getItem('arkon_user_profile'));
+            
+            if (!userProfile) {
+                // Si no está registrado, guardamos la intención de compra y abrimos modal
+                pendingCheckout = true;
+                openAuthModal();
+                return;
+            }
+
+            // 2. Si ya es miembro, proceder con mensaje personalizado
             const whatsappNumber = "584165530268"; 
             
-            // Construcción del mensaje
-            let message = "Hola Maison Arkon, me gustaría finalizar mi pedido:\n\n";
+            let message = `Hola, soy el cliente registrado *${userProfile.name}* (Email: ${userProfile.email}).\nDeseo confirmar el siguiente pedido:\n\n`;
+            
             cart.forEach(item => { 
                 message += `▪ ${item.quantity}x ${item.name} | Talla: ${item.size} | Color: ${item.color}\n`; 
             });
-            
             const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
             message += `\n*TOTAL A PAGAR: $${total.toFixed(2)}*`;
             message += `\n\nQuedo atento a los métodos de pago.`;
             
-            // Generar enlace y abrir
             const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         };
@@ -673,6 +756,7 @@
 
         window.onload = () => {
             initializeFirebase();
+            checkUserSession(); // Verificar si ya hay usuario al cargar
             document.getElementById('home-product-grid').innerHTML = products.slice(0, 3).map(product => createProductCard(product)).join('');
             lucide.createIcons();
         };
