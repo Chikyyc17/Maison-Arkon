@@ -35,7 +35,6 @@
                         'marquee': 'marquee 20s linear infinite',
                         'modal-in': 'modal-in 0.3s ease-out forwards',
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         marquee: {
@@ -88,43 +87,54 @@
             animation: modal-in 0.3s ease-out forwards;
         }
 
+        /* Estilo Botón Filtro Activo */
         .filter-btn.active {
-            color: #ef4444;
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 4px;
+            background-color: #ef4444;
+            border-color: #ef4444;
+            color: white;
         }
 
         .ai-stylist-block {
             background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
             border: 1px solid #333;
         }
+        
+        /* Clases para el acordeón */
+        .accordion-content {
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease;
+        }
+        .accordion-open {
+            max-height: 500px; /* Altura suficiente para el contenido */
+            opacity: 1;
+            padding-bottom: 1.5rem;
+        }
+        .accordion-closed {
+            max-height: 0;
+            opacity: 0;
+            padding-bottom: 0;
+        }
     </style>
 </head>
 <body class="font-sans bg-arkon-black text-arkon-white flex flex-col min-h-screen">
 
-    <!-- NAVBAR (LIMPIO: Solo navegación y carrito) -->
+    <!-- NAVBAR -->
     <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-arkon-black/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
         
         <div class="flex items-center">
-            <!-- Botón Hamburguesa (Móvil) -->
             <button onclick="toggleMobileMenu()" class="md:hidden text-white mr-4 p-2 -ml-2 focus:outline-none active:text-arkon-red transition-colors">
                 <i data-lucide="menu" class="w-7 h-7"></i>
             </button>
             
-            <!-- Enlaces (Escritorio) -->
             <div class="hidden md:flex gap-6 font-mono text-xs uppercase tracking-wider items-center">
                 <button onclick="navigateTo('shop')" class="hover:text-arkon-red transition-colors">Shop All</button>
                 <button onclick="navigateTo('shop', 'new')" class="hover:text-arkon-red transition-colors">New Arrivals</button>
             </div>
         </div>
         
-        <!-- Logo -->
         <button onclick="navigateTo('home')" class="font-display text-2xl md:text-3xl tracking-tighter uppercase absolute left-1/2 transform -translate-x-1/2 hover:text-gray-300 transition-colors z-10">
             Maison Arkon
         </button>
 
-        <!-- Carrito -->
         <div class="flex gap-6 items-center z-10">
             <button id="open-cart-btn" class="relative p-2 -mr-2 rounded-full hover:bg-white/10 transition duration-200">
                 <i data-lucide="shopping-bag" class="w-6 h-6 cursor-pointer hover:text-arkon-red transition-colors"></i>
@@ -204,99 +214,95 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- VIEW: SHOP -->
+    <!-- VIEW: SHOP (Con Filtro Acordeón) -->
     <!-- ========================================================================= -->
-    <div id="view-shop" class="hidden animate-fade-in pt-32 pb-24 px-6 md:px-12 max-w-8xl mx-auto min-h-screen">
-        <div class="mb-12 text-center md:text-left">
+    <div id="view-shop" class="hidden animate-fade-in pt-24 pb-24 px-6 md:px-12 max-w-8xl mx-auto min-h-screen">
+        
+        <!-- Header de la sección Shop -->
+        <div class="mb-8 text-center md:text-left pt-8">
             <h1 class="font-display text-5xl md:text-7xl uppercase mb-4 tracking-tighter">Shop All</h1>
-            <p class="font-mono text-gray-400 text-sm md:text-base max-w-2xl">
-                Explora la colección completa. Diseñada en las sombras, construida para la calle.
-            </p>
         </div>
 
-        <div class="sticky top-20 z-30 bg-arkon-black/95 backdrop-blur py-4 mb-12 border-b border-white/10 overflow-x-auto">
-            <div class="flex gap-6 font-mono text-xs md:text-sm uppercase tracking-wider whitespace-nowrap min-w-max px-2">
-                <button onclick="filterProducts('all')" class="filter-btn active hover:text-arkon-red transition-colors" data-category="all">All</button>
-                <button onclick="filterProducts('Camisas')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Camisas">Camisas</button>
-                <button onclick="filterProducts('Shorts')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Shorts">Shorts</button>
-                <button onclick="filterProducts('Bermudas')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Bermudas">Bermudas</button>
-                <button onclick="filterProducts('Hoodies')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Hoodies">Hoodies</button>
-                <button onclick="filterProducts('Monos')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Monos">Monos</button>
+        <!-- BARRA DE FILTROS COLAPSABLE (ACORDEÓN) -->
+        <div class="sticky top-20 z-30 bg-arkon-black/95 backdrop-blur border-b border-white/10 mb-12 shadow-lg">
+            
+            <!-- Trigger / Botón Principal -->
+            <div class="flex justify-between items-center px-4 py-4 cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleFilters()">
+                <div class="flex items-center gap-4">
+                    <span class="font-mono text-xs uppercase tracking-widest text-gray-400">Viendo: <span id="active-filter-label" class="text-white font-bold">ALL</span></span>
+                </div>
+                <button class="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-white">
+                    Filtrar por Categoría
+                    <i id="filter-icon" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300"></i>
+                </button>
+            </div>
+
+            <!-- Contenido Desplegable -->
+            <div id="filter-menu" class="accordion-content accordion-closed bg-[#0c0c0e] border-t border-white/5 overflow-hidden">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 p-6">
+                    <button onclick="filterProducts('all')" class="filter-btn active border border-white/20 hover:border-white py-3 px-4 rounded text-xs font-mono uppercase tracking-widest transition-all" data-category="all">All</button>
+                    <button onclick="filterProducts('Camisas')" class="filter-btn border border-white/20 hover:border-white py-3 px-4 rounded text-xs font-mono uppercase tracking-widest transition-all" data-category="Camisas">Camisas</button>
+                    <button onclick="filterProducts('Shorts')" class="filter-btn border border-white/20 hover:border-white py-3 px-4 rounded text-xs font-mono uppercase tracking-widest transition-all" data-category="Shorts">Shorts</button>
+                    <button onclick="filterProducts('Bermudas')" class="filter-btn border border-white/20 hover:border-white py-3 px-4 rounded text-xs font-mono uppercase tracking-widest transition-all" data-category="Bermudas">Bermudas</button>
+                    <button onclick="filterProducts('Hoodies')" class="filter-btn border border-white/20 hover:border-white py-3 px-4 rounded text-xs font-mono uppercase tracking-widest transition-all" data-category="Hoodies">Hoodies</button>
+                    <button onclick="filterProducts('Monos')" class="filter-btn border border-white/20 hover:border-white py-3 px-4 rounded text-xs font-mono uppercase tracking-widest transition-all" data-category="Monos">Monos</button>
+                </div>
             </div>
         </div>
 
         <div id="shop-product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12"></div>
-        <div id="no-results" class="hidden text-center py-20"><p class="font-mono text-gray-500">No se encontraron productos en esta categoría.</p></div>
+        <div id="no-results" class="hidden text-center py-20">
+            <p class="font-mono text-gray-500 text-lg">No se encontraron productos en esta categoría.</p>
+            <button onclick="filterProducts('all')" class="mt-4 text-xs font-mono uppercase text-arkon-red border-b border-arkon-red pb-1">Ver todo</button>
+        </div>
     </div>
 
     <!-- FOOTER MEJORADO -->
     <footer class="bg-black text-white border-t border-white/10 pt-16 pb-8 px-6 mt-auto">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 mb-16 text-center md:text-left">
-            
-            <!-- Columna 1: Sobre Nosotros -->
             <div class="flex flex-col items-center md:items-start">
                 <h2 class="font-display text-3xl uppercase tracking-tighter mb-4 text-white">Maison Arkon</h2>
                 <p class="text-gray-400 text-sm leading-relaxed max-w-xs font-sans">
-                    Estilo urbano y calidad premium. Redefiniendo el streetwear de lujo para quienes marcan su propio camino.
+                    ARKO - Redefiniendo el estilo urbano. Calidad y diseño en cada prenda.
                 </p>
-                <div id="status-message" class="mt-2 text-xs text-red-400 hidden"></div>
             </div>
-
-            <!-- Columna 2: Centro de Ayuda (Soporte) -->
             <div class="flex flex-col items-center md:items-start">
                 <h3 class="font-mono text-xs font-bold uppercase tracking-widest text-gray-500 mb-6">Centro de Ayuda</h3>
-                <p class="text-gray-400 text-sm mb-4">¿Tienes dudas antes de comprar?</p>
-                
                 <div class="flex flex-col gap-4 w-full max-w-xs">
-                    <!-- Botón WhatsApp -->
                     <a href="https://wa.me/584165530268" target="_blank" class="group flex items-center justify-center md:justify-start gap-3 bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-3 rounded-lg transition-all duration-300">
-                        <i data-lucide="message-circle" class="w-5 h-5 text-[#25D366] group-hover:scale-110 transition-transform"></i>
-                        <span class="font-bold text-sm text-white group-hover:text-[#25D366] transition-colors">Chatea con nosotros</span>
+                        <i data-lucide="message-circle" class="w-5 h-5 text-[#25D366]"></i>
+                        <span class="font-bold text-sm text-white group-hover:text-[#25D366] transition-colors">Soporte / Dudas</span>
                     </a>
-
-                    <!-- Botón Instagram -->
                     <a href="https://www.instagram.com/maisonarkon/" target="_blank" rel="noopener noreferrer" class="group flex items-center justify-center md:justify-start gap-3 px-5 py-2 hover:text-pink-500 transition-colors duration-300">
                         <i data-lucide="instagram" class="w-5 h-5"></i>
                         <span class="text-sm font-medium border-b border-transparent group-hover:border-pink-500">Síguenos @Arkon</span>
                     </a>
-    <!-- FOOTER -->
-    <footer class="bg-[#050505] border-t border-white/10 pt-20 pb-8 px-6 text-center md:text-left mt-auto">
-        <div class="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-                <h2 class="font-display text-2xl uppercase mb-2">Maison Arkon</h2>
-                <p class="text-gray-500 text-sm">Streetwear de lujo.</p>
-                <div id="status-message" class="mt-2 text-xs text-red-400 hidden"></div>
+                </div>
             </div>
-            <div class="md:text-right text-gray-600 text-xs font-mono uppercase">
-                &copy; 2024 Maison Arkon.
+            <div class="flex flex-col items-center md:items-start">
+                <h3 class="font-mono text-xs font-bold uppercase tracking-widest text-gray-500 mb-6">Explorar</h3>
+                <ul class="space-y-4 text-sm font-sans text-gray-300">
+                    <li><button onclick="navigateTo('shop')" class="hover:text-arkon-red transition-colors">Colección Completa</button></li>
+                    <li><button onclick="navigateTo('shop', 'new')" class="hover:text-arkon-red transition-colors">Nuevos Lanzamientos</button></li>
+                </ul>
             </div>
+        </div>
+        <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-wider">
+            <p>&copy; 2024 Maison Arkon. Todos los derechos reservados.</p>
         </div>
     </footer>
 
-    <!-- ========================================================================= -->
-    <!-- NUEVO: TOAST NOTIFICATION (Global) -->
-    <!-- ========================================================================= -->
+    <!-- TOAST NOTIFICATION -->
     <div id="toast-notification" class="fixed z-[100] top-24 right-4 md:top-auto md:bottom-8 md:right-8 flex items-center gap-4 bg-[#09090b] text-white px-6 py-4 rounded-xl shadow-2xl border-l-4 border-l-green-500 border-y border-r border-white/10 transition-all duration-500 transform translate-x-[150%] opacity-0 pointer-events-none">
-        <div class="bg-green-500/20 p-2 rounded-full">
-            <i data-lucide="check" class="w-4 h-4 text-green-500"></i>
-        </div>
-        <div>
-            <h4 class="font-bold text-sm font-display tracking-wide uppercase">¡Éxito!</h4>
-            <p id="toast-message" class="text-xs text-gray-400 font-mono mt-0.5">Producto añadido al carrito.</p>
-        </div>
+        <div class="bg-green-500/20 p-2 rounded-full"><i data-lucide="check" class="w-4 h-4 text-green-500"></i></div>
+        <div><h4 class="font-bold text-sm font-display tracking-wide uppercase">¡Éxito!</h4><p id="toast-message" class="text-xs text-gray-400 font-mono mt-0.5">Producto añadido al carrito.</p></div>
     </div>
 
-    <!-- ========================================================================= -->
     <!-- MODAL PRODUCTO -->
-    <!-- ========================================================================= -->
     <div id="product-modal" class="fixed inset-0 bg-arkon-black/95 backdrop-blur-md z-50 hidden overflow-y-auto" onclick="if(event.target.id === 'product-modal') closeModal()">
         <div class="flex items-center justify-center min-h-screen p-0 md:p-6">
             <div class="arkon-modal-card rounded-none md:rounded-xl shadow-2xl w-full max-w-6xl min-h-screen md:min-h-0 bg-[#09090b] relative flex flex-col md:block" onclick="event.stopPropagation()">
-                
-                <button onclick="closeModal()" class="absolute top-6 right-6 z-50 text-white bg-black/50 p-2 rounded-full hover:bg-arkon-red transition duration-200">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-
+                <button onclick="closeModal()" class="absolute top-6 right-6 z-50 text-white bg-black/50 p-2 rounded-full hover:bg-arkon-red transition duration-200"><i data-lucide="x" class="w-6 h-6"></i></button>
                 <div class="grid md:grid-cols-2 h-full">
                     <div class="relative bg-[#0c0c0e] h-full flex flex-col">
                         <div class="w-full aspect-[4/5] md:h-full bg-[#151515] overflow-hidden relative">
@@ -304,14 +310,11 @@
                         </div>
                         <div id="modal-gallery" class="hidden"></div> 
                     </div>
-
                     <div class="p-6 md:p-12 flex flex-col h-full overflow-y-auto">
                         <div class="mb-auto">
                             <h2 id="modal-product-name" class="font-display text-4xl md:text-5xl uppercase text-arkon-white mb-2 leading-none"></h2>
                             <p id="modal-product-price" class="font-mono text-2xl text-arkon-red mb-6"></p>
                             <p id="modal-product-description" class="text-gray-400 font-sans leading-relaxed mb-8 text-sm md:text-base"></p>
-
-                            <!-- Botón Estilista eliminado de aquí para limpieza, o mantenido si lo deseas -->
                             <div class="mb-8 border-y border-white/10 py-4">
                                 <button id="ai-stylist-btn" onclick="askGeminiStylist()" class="group/ai w-full flex justify-between items-center text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
                                     <span class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> Consultar Estilista Virtual</span>
@@ -321,26 +324,11 @@
                                     <div id="ai-content"></div>
                                 </div>
                             </div>
-
-                            <div class="mb-8">
-                                <h3 class="font-mono text-xs uppercase text-gray-500 mb-3 tracking-widest">Color Seleccionado: <span id="selected-color-name" class="text-white"></span></h3>
-                                <div id="color-selector" class="flex flex-wrap gap-3"></div>
-                            </div>
-
-                            <div class="mb-8">
-                                <div class="flex justify-between items-end mb-3">
-                                    <h3 class="font-mono text-xs uppercase text-gray-500 tracking-widest">Talla</h3>
-                                    <button class="text-xs text-gray-500 underline decoration-1 underline-offset-2 hover:text-white">Guía de Tallas</button>
-                                </div>
-                                <div id="size-selector" class="grid grid-cols-4 gap-3"></div>
-                            </div>
+                            <div class="mb-8"><h3 class="font-mono text-xs uppercase text-gray-500 mb-3 tracking-widest">Color Seleccionado: <span id="selected-color-name" class="text-white"></span></h3><div id="color-selector" class="flex flex-wrap gap-3"></div></div>
+                            <div class="mb-8"><div class="flex justify-between items-end mb-3"><h3 class="font-mono text-xs uppercase text-gray-500 tracking-widest">Talla</h3><button class="text-xs text-gray-500 underline decoration-1 underline-offset-2 hover:text-white">Guía de Tallas</button></div><div id="size-selector" class="grid grid-cols-4 gap-3"></div></div>
                         </div>
-
                         <div class="mt-8 pt-6 border-t border-white/10 sticky bottom-0 bg-[#09090b] md:relative md:bg-transparent md:border-t-0 md:pt-0">
-                            <button id="add-to-cart-btn" onclick="addToCart()" class="btn-primary w-full py-4 text-lg uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span>Añadir al Carrito</span>
-                                <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                            </button>
+                            <button id="add-to-cart-btn" onclick="addToCart()" class="btn-primary w-full py-4 text-lg uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"><span>Añadir al Carrito</span><i data-lucide="arrow-right" class="w-5 h-5"></i></button>
                         </div>
                     </div>
                 </div>
@@ -350,28 +338,12 @@
 
     <!-- SIDEBAR CARRITO -->
     <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-arkon-black shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-l border-white/10">
-        <div class="p-6 border-b border-white/10 flex justify-between items-center">
-            <h3 class="font-display text-2xl text-arkon-white uppercase">Carrito</h3>
-            <button onclick="closeCart()" class="text-gray-400 hover:text-arkon-red"><i data-lucide="x" class="w-6 h-6"></i></button>
-        </div>
-        
+        <div class="p-6 border-b border-white/10 flex justify-between items-center"><h3 class="font-display text-2xl text-arkon-white uppercase">Carrito</h3><button onclick="closeCart()" class="text-gray-400 hover:text-arkon-red"><i data-lucide="x" class="w-6 h-6"></i></button></div>
         <div class="flex-grow overflow-y-auto p-6 relative">
             <div id="cart-items-container" class="space-y-4"></div>
             <p id="empty-cart-message" class="text-gray-600 text-center py-10 font-mono text-sm hidden">El carrito está vacío.</p>
         </div>
-        
-        <div class="p-6 border-t border-white/10 bg-[#0c0c0e]">
-            <div class="flex justify-between items-center text-xl font-mono font-bold mb-6">
-                <span class="text-gray-300">Total:</span>
-                <span id="cart-total" class="text-arkon-red">$0.00</span>
-            </div>
-            
-            <button onclick="checkout()" class="btn-whatsapp w-full">
-                <i data-lucide="message-circle" class="w-5 h-5 fill-current"></i>
-                Finalizar en WhatsApp
-            </button>
-            <p class="text-[10px] text-gray-500 text-center mt-3 font-mono">Serás redirigido a WhatsApp.</p>
-        </div>
+        <div class="p-6 border-t border-white/10 bg-[#0c0c0e]"><div class="flex justify-between items-center text-xl font-mono font-bold mb-6"><span class="text-gray-300">Total:</span><span id="cart-total" class="text-arkon-red">$0.00</span></div><button onclick="checkout()" class="btn-whatsapp w-full"><i data-lucide="message-circle" class="w-5 h-5 fill-current"></i>Finalizar en WhatsApp</button><p class="text-[10px] text-gray-500 text-center mt-3 font-mono">Serás redirigido a WhatsApp.</p></div>
     </div>
 
     <script type="module">
@@ -384,24 +356,16 @@
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         const apiKey = "";
         
-        let db; let auth; let userId = null; let isAuthReady = false; 
-        
-        let cart = [];
+        let db; let auth; let userId = null; let isAuthReady = false; let cart = [];
 
-        // =========================================================================
         // FIREBASE SETUP
-        // =========================================================================
-
         async function initializeFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
                 if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken); else await signInAnonymously(auth);
-                onAuthStateChanged(auth, (user) => {
-                    if (user) { userId = user.uid; isAuthReady = true; setupCartListener(); document.getElementById('status-message').classList.add('hidden'); } 
-                    else { document.getElementById('status-message').textContent = "Error auth."; document.getElementById('status-message').classList.remove('hidden'); }
-                });
+                onAuthStateChanged(auth, (user) => { if (user) { userId = user.uid; isAuthReady = true; setupCartListener(); } });
             } catch (error) { console.error("Firebase error", error); }
         }
 
@@ -411,24 +375,9 @@
 
         // DATOS
         const products = [
-            { 
-                id: 1, name: "Gothic Logo Tee", price: 15.00, category: "Camisas", description: "Camiseta oversized con logo gótico.", 
-                image: "camiseta_crema.jpg", 
-                colors: [{ name: "Cream", hex: "#f5f5dc" }, { name: "Black", hex: "#000" }], 
-                sizes: ["S", "M", "L", "XL"], tag: "Best Seller" 
-            },
-            { 
-                id: 2, name: "Chrome logo Tee", price: 15.00, category: "Camisas", description: "Camiseta algodón pesado logo Chrome.", 
-                image: "camiseta_blanca.jpg", 
-                colors: [{ name: "White", hex: "#fff" }], 
-                sizes: ["S", "M", "L", "XL"], tag: null 
-            },
-            { 
-                id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Shorts", description: "Shorts denim vintage con parches.", 
-                image: "short.jpg",
-                colors: [{ name: "Vintage Blue", hex: "#3b82f6" }], 
-                sizes: ["28", "30", "32"], tag: "Limited" 
-            },
+            { id: 1, name: "Gothic Logo Tee", price: 15.00, category: "Camisas", description: "Camiseta oversized con logo gótico.", image: "camiseta_crema.jpg", colors: [{ name: "Cream", hex: "#f5f5dc" }, { name: "Black", hex: "#000" }], sizes: ["S", "M", "L", "XL"], tag: "Best Seller" },
+            { id: 2, name: "Chrome logo Tee", price: 15.00, category: "Camisas", description: "Camiseta algodón pesado logo Chrome.", image: "camiseta_blanca.jpg", colors: [{ name: "White", hex: "#fff" }], sizes: ["S", "M", "L", "XL"], tag: null },
+            { id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Shorts", description: "Shorts denim vintage con parches.", image: "short.jpg", colors: [{ name: "Vintage Blue", hex: "#3b82f6" }], sizes: ["28", "30", "32"], tag: "Limited" },
             { id: 5, name: "Cargo Tech Bermuda", price: 45.00, category: "Bermudas", description: "Bermuda técnica negra.", image: "https://images.unsplash.com/photo-1696541014392-540c490a0279", colors: [{ name: "Black Matte", hex: "#111" }], sizes: ["30", "32", "34"], tag: "New" },
             { id: 6, name: "Arkon Core Hoodie", price: 85.00, category: "Hoodies", description: "Hoodie heavyweight 500GSM.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7", colors: [{ name: "Ash Grey", hex: "#888" }], sizes: ["M", "L", "XL"], tag: null },
             { id: 4, name: "The Arkon Look", price: 185.00, category: "Monos", description: "Set completo sudadera y jogger.", image: "portada.jpg", colors: [{ name: "Graphite", hex: "#27272a" }], sizes: ["M", "L", "XL"], tag: "Bundle" },
@@ -446,14 +395,46 @@
             if(viewId === 'shop') filterProducts(filter);
         };
 
+        // FUNCIÓN TOGGLE ACORDEÓN
+        window.toggleFilters = () => {
+            const menu = document.getElementById('filter-menu');
+            const icon = document.getElementById('filter-icon');
+            if (menu.classList.contains('accordion-closed')) {
+                menu.classList.remove('accordion-closed');
+                menu.classList.add('accordion-open');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                menu.classList.remove('accordion-open');
+                menu.classList.add('accordion-closed');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };
+
         window.filterProducts = (category) => {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.category === category));
+            // Actualizar botones
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.category === category) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            
+            // Actualizar etiqueta
+            document.getElementById('active-filter-label').textContent = category.toUpperCase();
+
             const grid = document.getElementById('shop-product-grid');
             const filtered = category === 'all' || category === 'new' ? products : products.filter(p => p.category === category);
-            if (filtered.length === 0) { grid.innerHTML = ''; document.getElementById('no-results').classList.remove('hidden'); return; }
-            document.getElementById('no-results').classList.add('hidden');
-            grid.innerHTML = filtered.map(product => createProductCard(product)).join('');
+            
+            if (filtered.length === 0) { 
+                grid.innerHTML = ''; 
+                document.getElementById('no-results').classList.remove('hidden'); 
+            } else {
+                document.getElementById('no-results').classList.add('hidden');
+                grid.innerHTML = filtered.map(product => createProductCard(product)).join('');
+            }
+            
             lucide.createIcons();
+            
+            // Cerrar menú automáticamente para mejor UX
+            if(category !== 'all') window.toggleFilters();
         };
 
         function createProductCard(product) {
@@ -481,9 +462,7 @@
             let realImageSrc = selectedProduct.image;
             if (cardElement) {
                 const imgTag = cardElement.querySelector('img');
-                if (imgTag) {
-                    realImageSrc = imgTag.src;
-                }
+                if (imgTag) realImageSrc = imgTag.src;
             }
             document.getElementById('modal-product-image').src = realImageSrc;
             
@@ -500,41 +479,21 @@
         function renderSelectors() {
             const colorContainer = document.getElementById('color-selector');
             colorContainer.innerHTML = selectedProduct.colors.map(c => 
-                `<button onclick="selectOption('color', '${c.name}')" 
-                    title="${c.name}"
-                    style="background-color:${c.hex}" 
-                    class="w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedOptions.color === c.name ? 'border-white ring-2 ring-arkon-red scale-110' : 'border-white/20 hover:border-white'}">
-                </button>`
+                `<button onclick="selectOption('color', '${c.name}')" style="background-color:${c.hex}" class="w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedOptions.color === c.name ? 'border-white ring-2 ring-arkon-red scale-110' : 'border-white/20 hover:border-white'}"></button>`
             ).join('');
             document.getElementById('selected-color-name').textContent = selectedOptions.color;
 
             const sizeContainer = document.getElementById('size-selector');
             sizeContainer.innerHTML = selectedProduct.sizes.map(s => 
-                `<button onclick="selectOption('size', '${s}')" 
-                    class="py-3 px-4 font-mono text-sm font-bold border transition-all duration-200 uppercase tracking-widest
-                    ${selectedOptions.size === s 
-                        ? 'bg-arkon-red border-arkon-red text-white shadow-[0_0_15px_rgba(239,68,68,0.4)]' 
-                        : 'bg-transparent border-white/20 text-gray-400 hover:border-white hover:text-white'}">
-                    ${s}
-                </button>`
+                `<button onclick="selectOption('size', '${s}')" class="py-3 px-4 font-mono text-sm font-bold border transition-all duration-200 uppercase tracking-widest ${selectedOptions.size === s ? 'bg-arkon-red border-arkon-red text-white shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-transparent border-white/20 text-gray-400 hover:border-white hover:text-white'}">${s}</button>`
             ).join('');
             
             const addBtn = document.getElementById('add-to-cart-btn');
-            if (selectedOptions.size) {
-                addBtn.disabled = false;
-                addBtn.style.opacity = '1';
-                addBtn.style.cursor = 'pointer';
-            } else {
-                addBtn.disabled = true;
-                addBtn.style.opacity = '0.5';
-                addBtn.style.cursor = 'not-allowed';
-            }
+            if (selectedOptions.size) { addBtn.disabled = false; addBtn.style.opacity = '1'; addBtn.style.cursor = 'pointer'; } 
+            else { addBtn.disabled = true; addBtn.style.opacity = '0.5'; addBtn.style.cursor = 'not-allowed'; }
         }
 
-        window.selectOption = (type, val) => {
-            selectedOptions[type] = val;
-            renderSelectors();
-        };
+        window.selectOption = (type, val) => { selectedOptions[type] = val; renderSelectors(); };
 
         // GEMINI AI
         window.askGeminiStylist = async () => {
@@ -555,7 +514,6 @@
                 });
                 const data = await response.json();
                 const advice = data.candidates?.[0]?.content?.parts?.[0]?.text || "Intenta de nuevo.";
-                
                 contentDiv.innerHTML = `<h4 class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-2 uppercase text-xs">⚡ ARKON STYLE GUIDE</h4><div class="whitespace-pre-line leading-relaxed text-gray-400">${advice}</div>`;
                 responseDiv.classList.remove('hidden');
             } catch (error) { console.error(error); } finally {
@@ -564,57 +522,21 @@
             }
         };
 
-        // =========================================================================
-        // CART LOGIC + NUEVO TOAST
-        // =========================================================================
+        // CART LOGIC
         window.addToCart = () => {
-            if(!selectedOptions.size) { 
-                alert("⚠️ Por favor selecciona una talla antes de añadir."); 
-                return; 
-            }
-
-            const item = { 
-                id: crypto.randomUUID(), 
-                productId: selectedProduct.id, 
-                name: selectedProduct.name, 
-                price: selectedProduct.price, 
-                image: document.getElementById('modal-product-image').src, 
-                size: selectedOptions.size, 
-                color: selectedOptions.color, 
-                quantity: 1 
-            };
-
+            if(!selectedOptions.size) { alert("⚠️ Por favor selecciona una talla antes de añadir."); return; }
+            const item = { id: crypto.randomUUID(), productId: selectedProduct.id, name: selectedProduct.name, price: selectedProduct.price, image: document.getElementById('modal-product-image').src, size: selectedOptions.size, color: selectedOptions.color, quantity: 1 };
             const existing = cart.find(i => i.productId === item.productId && i.size === item.size && i.color === item.color);
-            if(existing) {
-                existing.quantity++; 
-            } else {
-                cart.push(item);
-            }
-
-            saveCartToFirestore(cart); 
-            
-            // Cerrar modal primero
-            closeModal();
-            // Mostrar Toast
-            showToast('¡Agregado al carrito!');
-            
-            renderCart();
+            if(existing) existing.quantity++; else cart.push(item);
+            saveCartToFirestore(cart); showToast('¡Agregado al carrito!'); closeModal(); renderCart();
         };
 
-        // Función del Toast
         window.showToast = (message) => {
             const toast = document.getElementById('toast-notification');
             const msgEl = document.getElementById('toast-message');
-            
             if(message) msgEl.textContent = message;
-            
-            // Mostrar: Quitamos clases que ocultan
             toast.classList.remove('translate-x-[150%]', 'opacity-0', 'pointer-events-none');
-            
-            // Ocultar: Añadimos clases después de 3s
-            setTimeout(() => {
-                toast.classList.add('translate-x-[150%]', 'opacity-0', 'pointer-events-none');
-            }, 3000);
+            setTimeout(() => { toast.classList.add('translate-x-[150%]', 'opacity-0', 'pointer-events-none'); }, 3000);
         }
         
         function renderCart() {
@@ -623,14 +545,7 @@
             const totalEl = document.getElementById('cart-total');
             const countEl = document.getElementById('cart-count');
 
-            if(cart.length === 0) { 
-                container.innerHTML = ''; 
-                if(emptyMsg) emptyMsg.classList.remove('hidden'); 
-                if(totalEl) totalEl.textContent = '$0.00'; 
-                if(countEl) countEl.textContent = '0'; 
-                return; 
-            }
-            
+            if(cart.length === 0) { container.innerHTML = ''; if(emptyMsg) emptyMsg.classList.remove('hidden'); if(totalEl) totalEl.textContent = '$0.00'; if(countEl) countEl.textContent = '0'; return; }
             if(emptyMsg) emptyMsg.classList.add('hidden');
             
             container.innerHTML = cart.map(item => `
@@ -652,35 +567,22 @@
             saveCartToFirestore(cart); renderCart();
         };
 
-        // =========================================================================
-        // CHECKOUT SIMPLIFICADO Y ANÓNIMO
-        // =========================================================================
         window.checkout = () => {
             if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
-            
             const whatsappNumber = "584165530268"; 
-            
-            // Mensaje Directo y Genérico
             let message = "Hola Maison Arkon, me interesa pedir lo siguiente:\n\n";
-            
-            cart.forEach(item => { 
-                message += `▪ ${item.quantity}x ${item.name} | Talla: ${item.size} | Color: ${item.color}\n`; 
-            });
+            cart.forEach(item => { message += `▪ ${item.quantity}x ${item.name} | Talla: ${item.size} | Color: ${item.color}\n`; });
             const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
             message += `\n*TOTAL: $${total.toFixed(2)}*`;
             message += `\n\nQuedo atento a la confirmación.`;
-            
             const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         };
 
         window.toggleMobileMenu = () => {
             const menu = document.getElementById('mobile-menu');
-            if(menu.classList.contains('-translate-x-full')) {
-                menu.classList.remove('-translate-x-full');
-            } else {
-                menu.classList.add('-translate-x-full');
-            }
+            if(menu.classList.contains('-translate-x-full')) { menu.classList.remove('-translate-x-full'); } 
+            else { menu.classList.add('-translate-x-full'); }
         };
 
         window.openCart = () => { document.getElementById('cart-sidebar').classList.remove('translate-x-full'); renderCart(); };
