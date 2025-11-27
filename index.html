@@ -259,29 +259,32 @@
                         <i data-lucide="instagram" class="w-5 h-5"></i>
                         <span class="text-sm font-medium border-b border-transparent group-hover:border-pink-500">Síguenos @Arkon</span>
                     </a>
-                </div>
+    <!-- FOOTER -->
+    <footer class="bg-[#050505] border-t border-white/10 pt-20 pb-8 px-6 text-center md:text-left mt-auto">
+        <div class="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h2 class="font-display text-2xl uppercase mb-2">Maison Arkon</h2>
+                <p class="text-gray-500 text-sm">Streetwear de lujo.</p>
+                <div id="status-message" class="mt-2 text-xs text-red-400 hidden"></div>
             </div>
-
-            <!-- Columna 3: Navegación / Legales -->
-            <div class="flex flex-col items-center md:items-start">
-                <h3 class="font-mono text-xs font-bold uppercase tracking-widest text-gray-500 mb-6">Explorar</h3>
-                <ul class="space-y-4 text-sm font-sans text-gray-300">
-                    <li><button onclick="navigateTo('shop')" class="hover:text-arkon-red transition-colors">Shop All</button></li>
-                    <li><button onclick="navigateTo('shop', 'new')" class="hover:text-arkon-red transition-colors">New Arrivals</button></li>
-                    <li><a href="#" class="hover:text-arkon-red transition-colors">Términos y Condiciones</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Barra Inferior Copyright -->
-        <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-wider">
-            <p>&copy; 2024 Maison Arkon. Todos los derechos reservados.</p>
-            <div class="flex gap-4 mt-4 md:mt-0">
-                <span class="text-gray-800">|</span>
-                <p>Designed for Excellence</p>
+            <div class="md:text-right text-gray-600 text-xs font-mono uppercase">
+                &copy; 2024 Maison Arkon.
             </div>
         </div>
     </footer>
+
+    <!-- ========================================================================= -->
+    <!-- NUEVO: TOAST NOTIFICATION (Global) -->
+    <!-- ========================================================================= -->
+    <div id="toast-notification" class="fixed z-[100] top-24 right-4 md:top-auto md:bottom-8 md:right-8 flex items-center gap-4 bg-[#09090b] text-white px-6 py-4 rounded-xl shadow-2xl border-l-4 border-l-green-500 border-y border-r border-white/10 transition-all duration-500 transform translate-x-[150%] opacity-0 pointer-events-none">
+        <div class="bg-green-500/20 p-2 rounded-full">
+            <i data-lucide="check" class="w-4 h-4 text-green-500"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm font-display tracking-wide uppercase">¡Éxito!</h4>
+            <p id="toast-message" class="text-xs text-gray-400 font-mono mt-0.5">Producto añadido al carrito.</p>
+        </div>
+    </div>
 
     <!-- ========================================================================= -->
     <!-- MODAL PRODUCTO -->
@@ -308,6 +311,7 @@
                             <p id="modal-product-price" class="font-mono text-2xl text-arkon-red mb-6"></p>
                             <p id="modal-product-description" class="text-gray-400 font-sans leading-relaxed mb-8 text-sm md:text-base"></p>
 
+                            <!-- Botón Estilista eliminado de aquí para limpieza, o mantenido si lo deseas -->
                             <div class="mb-8 border-y border-white/10 py-4">
                                 <button id="ai-stylist-btn" onclick="askGeminiStylist()" class="group/ai w-full flex justify-between items-center text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
                                     <span class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> Consultar Estilista Virtual</span>
@@ -339,10 +343,6 @@
                             </button>
                         </div>
                     </div>
-                </div>
-                
-                <div id="notification" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-arkon-red text-white py-3 px-6 rounded shadow-xl transition-all duration-300 opacity-0 pointer-events-none z-[60] font-mono text-sm uppercase tracking-wide">
-                    Producto Añadido Correctamente
                 </div>
             </div>
         </div>
@@ -564,7 +564,9 @@
             }
         };
 
-        // CART LOGIC
+        // =========================================================================
+        // CART LOGIC + NUEVO TOAST
+        // =========================================================================
         window.addToCart = () => {
             if(!selectedOptions.size) { 
                 alert("⚠️ Por favor selecciona una talla antes de añadir."); 
@@ -590,19 +592,29 @@
             }
 
             saveCartToFirestore(cart); 
-            showNotification();
-            closeModal(); 
+            
+            // Cerrar modal primero
+            closeModal();
+            // Mostrar Toast
+            showToast('¡Agregado al carrito!');
+            
             renderCart();
         };
 
-        function showNotification() { 
-            const n = document.getElementById('notification'); 
-            n.classList.remove('opacity-0', 'pointer-events-none'); 
-            n.classList.add('opacity-100'); 
+        // Función del Toast
+        window.showToast = (message) => {
+            const toast = document.getElementById('toast-notification');
+            const msgEl = document.getElementById('toast-message');
+            
+            if(message) msgEl.textContent = message;
+            
+            // Mostrar: Quitamos clases que ocultan
+            toast.classList.remove('translate-x-[150%]', 'opacity-0', 'pointer-events-none');
+            
+            // Ocultar: Añadimos clases después de 3s
             setTimeout(() => {
-                n.classList.remove('opacity-100'); 
-                n.classList.add('opacity-0', 'pointer-events-none');
-            }, 2000); 
+                toast.classList.add('translate-x-[150%]', 'opacity-0', 'pointer-events-none');
+            }, 3000);
         }
         
         function renderCart() {
