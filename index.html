@@ -17,7 +17,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
-        // Configuración de Tailwind CSS con tus colores y fuentes
         tailwind.config = {
             theme: {
                 extend: {
@@ -30,10 +29,13 @@
                         'arkon-black': '#09090b',
                         'arkon-white': '#fafafa',
                         'arkon-red': '#ef4444',
+                        'whatsapp-green': '#25D366', 
                     },
                     animation: {
                         'marquee': 'marquee 20s linear infinite',
                         'modal-in': 'modal-in 0.3s ease-out forwards',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         marquee: {
@@ -43,6 +45,10 @@
                         'modal-in': {
                             '0%': { opacity: '0', transform: 'scale(0.95) translateY(20px)' },
                             '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
                         }
                     }
                 }
@@ -51,132 +57,171 @@
     </script>
 
     <style>
-        /* Estilos base y de scroll */
         html { scroll-behavior: smooth; background-color: #09090b; }
         body { color: #fafafa; overflow-x: hidden; }
         ::selection { background-color: #ef4444; color: white; }
         
-        /* Efecto Zoom en Imagenes de Catálogo */
         .product-image-container { overflow: hidden; position: relative; }
         .product-image-container img { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
         .group:hover .product-image-container img { transform: scale(1.05); }
 
-        /* Botón hover (adaptado a arkon-black) */
         .btn-hover-effect { position: relative; overflow: hidden; transition: color 0.3s; }
         .btn-hover-effect::before {
             content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background-color: #ef4444; /* Usando arkon-red como hover */
+            background-color: #ef4444; 
             transition: left 0.3s ease-in-out; z-index: -1;
         }
         .btn-hover-effect:hover::before { left: 0; }
-        .btn-hover-effect:hover { color: #09090b; } /* Cambia el texto a negro de arkon */
+        .btn-hover-effect:hover { color: #09090b; }
 
-        /* Botón principal (para carrito y modal) */
         .btn-primary {
             @apply bg-arkon-red text-arkon-white font-semibold py-3 px-6 rounded-xl hover:bg-red-600 transition duration-300 shadow-lg shadow-arkon-red/30;
         }
+        
+        /* Botón específico para WhatsApp */
+        .btn-whatsapp {
+            @apply bg-[#25D366] text-white font-bold py-4 px-6 rounded-xl hover:bg-[#128C7E] transition duration-300 shadow-lg flex items-center justify-center gap-3 uppercase tracking-wide text-sm;
+        }
 
-        /* Estilo para el modal de producto */
         .arkon-modal-card {
-            background-color: #09090b; /* Fondo oscuro del modal */
-            border: 1px solid #1f2937; /* Borde sutil */
+            background-color: #09090b; 
+            border: 1px solid #1f2937; 
             animation: modal-in 0.3s ease-out forwards;
+        }
+
+        .filter-btn.active {
+            color: #ef4444;
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
+
+        /* Estilos para el bloque de IA */
+        .ai-stylist-block {
+            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+            border: 1px solid #333;
         }
     </style>
 </head>
-<body class="font-sans bg-arkon-black text-arkon-white">
+<body class="font-sans bg-arkon-black text-arkon-white flex flex-col min-h-screen">
 
-    <!-- Navbar -->
-    <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-arkon-black/90 backdrop-blur-md border-b border-white/10">
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-arkon-black/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
         <div class="hidden md:flex gap-6 font-mono text-xs uppercase tracking-wider">
-            <a href="#shop" class="hover:text-arkon-red transition-colors">Shop All</a>
-            <a href="#" class="hover:text-arkon-red transition-colors">New Arrivals</a>
+            <button onclick="navigateTo('shop')" class="hover:text-arkon-red transition-colors">Shop All</button>
+            <button onclick="navigateTo('shop', 'new')" class="hover:text-arkon-red transition-colors">New Arrivals</button>
         </div>
         
-        <!-- Titulo Logo -->
-        <a href="#" class="font-display text-2xl md:text-3xl tracking-tighter uppercase absolute left-1/2 transform -translate-x-1/2">
+        <button onclick="navigateTo('home')" class="font-display text-2xl md:text-3xl tracking-tighter uppercase absolute left-1/2 transform -translate-x-1/2 hover:text-gray-300 transition-colors">
             Maison Arkon
-        </a>
+        </button>
 
         <div class="flex gap-6 items-center">
-            <!-- Botón de Carrito (Actualizado con contador) -->
             <button id="open-cart-btn" class="relative p-2 rounded-full hover:bg-white/10 transition duration-200">
                 <i data-lucide="shopping-bag" class="w-5 h-5 cursor-pointer hover:text-arkon-red transition-colors"></i>
                 <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-arkon-red rounded-full">0</span>
             </button>
-            <i data-lucide="menu" class="w-6 h-6 md:hidden cursor-pointer"></i>
+            <i data-lucide="menu" class="w-6 h-6 md:hidden cursor-pointer" onclick="toggleMobileMenu()"></i>
         </div>
     </nav>
 
-    <!-- HERO SECTION (FOTO PORTADA) -->
-    <header class="relative h-screen w-full overflow-hidden flex items-center justify-center">
-        <div class="absolute inset-0 z-0">
-            <img src="portada.jpg" 
-                 class="w-full h-full object-cover object-top opacity-60" 
-                 alt="Maison Arkon Campaign"
-                 onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'">
-            <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/30 via-transparent to-arkon-black"></div>
-        </div>
+    <!-- ========================================================================= -->
+    <!-- VIEW: HOME -->
+    <!-- ========================================================================= -->
+    <div id="view-home" class="animate-fade-in">
+        <!-- HERO SECTION -->
+        <header class="relative h-screen w-full overflow-hidden flex items-center justify-center">
+            <div class="absolute inset-0 z-0">
+                <img src="portada.jpg" 
+                     class="w-full h-full object-cover object-top opacity-60" 
+                     alt="Maison Arkon Campaign"
+                     onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'">
+                <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/30 via-transparent to-arkon-black"></div>
+            </div>
 
-        <div class="relative z-10 text-center px-4 max-w-5xl">
-            <span class="inline-block py-1 px-3 border border-white/30 rounded-full font-mono text-xs uppercase mb-6 backdrop-blur-sm">
-                Fall / Winter 2024
-            </span>
-            <h1 class="font-display text-5xl md:text-8xl lg:text-9xl uppercase leading-none mb-6 tracking-tight drop-shadow-xl">
-                Urban <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Rituals</span>
-            </h1>
-            <div class="mt-8">
-                <a href="#shop" class="btn-hover-effect border border-white px-8 py-4 text-sm font-bold uppercase tracking-widest inline-block">
-                    Comprar Ahora
-                </a>
+            <div class="relative z-10 text-center px-4 max-w-5xl">
+                <span class="inline-block py-1 px-3 border border-white/30 rounded-full font-mono text-xs uppercase mb-6 backdrop-blur-sm">
+                    Fall / Winter 2024
+                </span>
+                <h1 class="font-display text-5xl md:text-8xl lg:text-9xl uppercase leading-none mb-6 tracking-tight drop-shadow-xl">
+                    Urban <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Rituals</span>
+                </h1>
+                <div class="mt-8">
+                    <button onclick="navigateTo('shop')" class="btn-hover-effect border border-white px-8 py-4 text-sm font-bold uppercase tracking-widest inline-block">
+                        Comprar Ahora
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MARQUEE -->
+        <div class="bg-arkon-red text-arkon-black py-3 overflow-hidden whitespace-nowrap border-y border-black">
+            <div class="inline-block animate-marquee font-display text-xl uppercase tracking-tighter">
+                New Drop Available • Worldwide Shipping • Maison Arkon Studios • Limited Quantities • New Drop Available •
             </div>
         </div>
-    </header>
 
-    <!-- TEXTO EN MOVIMIENTO -->
-    <div class="bg-arkon-red text-arkon-black py-3 overflow-hidden whitespace-nowrap border-y border-black">
-        <div class="inline-block animate-marquee font-display text-xl uppercase tracking-tighter">
-            New Drop Available • Worldwide Shipping • Maison Arkon Studios • Limited Quantities • New Drop Available •
-        </div>
+        <!-- FEATURED SECTION -->
+        <section class="py-0">
+            <div class="grid grid-cols-1 md:grid-cols-2 bg-[#121212]">
+                <div class="p-12 md:p-24 flex flex-col justify-center border-r border-white/10">
+                    <h2 class="font-display text-4xl md:text-5xl uppercase mb-6 leading-none">Streetwear <br> Redefined.</h2>
+                    <p class="font-sans text-gray-400 leading-relaxed mb-8 max-w-md">
+                        Calidad sobre cantidad. Nuestras prendas están diseñadas para destacar en el caos urbano.
+                    </p>
+                    <button onclick="navigateTo('shop')" class="text-arkon-red font-mono text-sm uppercase hover:underline underline-offset-4 decoration-1 text-left">Ver Catálogo -></button>
+                </div>
+                <div class="h-[50vh] md:h-auto relative overflow-hidden">
+                    <img src="accesorios.jpg" 
+                         class="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
+                         alt="Flatlay accesorios"
+                         onerror="this.src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2070&auto=format&fit=crop'">
+                </div>
+            </div>
+        </section>
+
+        <!-- HOME GRID -->
+        <section class="py-24 px-6 md:px-12 max-w-8xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-white/10 pb-6">
+                <h2 class="font-display text-4xl uppercase tracking-tighter">Destacados</h2>
+            </div>
+            <div id="home-product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12"></div>
+        </section>
     </div>
 
-    <!-- SECCIÓN DESTACADA -->
-    <section class="py-0">
-        <div class="grid grid-cols-1 md:grid-cols-2 bg-[#121212]">
-            <div class="p-12 md:p-24 flex flex-col justify-center border-r border-white/10">
-                <h2 class="font-display text-4xl md:text-5xl uppercase mb-6 leading-none">Streetwear <br> Redefined.</h2>
-                <p class="font-sans text-gray-400 leading-relaxed mb-8 max-w-md">
-                    Calidad sobre cantidad. Nuestras prendas están diseñadas para destacar en el caos urbano.
-                </p>
-                <a href="#shop" class="text-arkon-red font-mono text-sm uppercase hover:underline underline-offset-4 decoration-1">Ver Catálogo -></a>
-            </div>
-            <div class="h-[50vh] md:h-auto relative overflow-hidden">
-                <img src="accesorios.jpg" 
-                     class="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
-                     alt="Flatlay accesorios"
-                     onerror="this.src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2070&auto=format&fit=crop'">
-            </div>
-        </div>
-    </section>
-
-    <!-- TIENDA / GRID DE PRODUCTOS -->
-    <section id="shop" class="py-24 px-6 md:px-12 max-w-8xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-white/10 pb-6">
-            <h2 class="font-display text-4xl uppercase tracking-tighter">Catálogo</h2>
+    <!-- ========================================================================= -->
+    <!-- VIEW: SHOP -->
+    <!-- ========================================================================= -->
+    <div id="view-shop" class="hidden animate-fade-in pt-32 pb-24 px-6 md:px-12 max-w-8xl mx-auto min-h-screen">
+        <div class="mb-12 text-center md:text-left">
+            <h1 class="font-display text-5xl md:text-7xl uppercase mb-4 tracking-tighter">Shop All</h1>
+            <p class="font-mono text-gray-400 text-sm md:text-base max-w-2xl">
+                Explora la colección completa. Diseñada en las sombras, construida para la calle.
+            </p>
         </div>
 
-        <!-- El grid ahora se renderiza dinámicamente o usa llamadas a openModal -->
-        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
-            <!-- Los productos se llenarán aquí mediante JavaScript (ver abajo) -->
+        <div class="sticky top-20 z-30 bg-arkon-black/95 backdrop-blur py-4 mb-12 border-b border-white/10 overflow-x-auto">
+            <div class="flex gap-6 font-mono text-xs md:text-sm uppercase tracking-wider whitespace-nowrap min-w-max px-2">
+                <button onclick="filterProducts('all')" class="filter-btn active hover:text-arkon-red transition-colors" data-category="all">All</button>
+                <button onclick="filterProducts('Camisas')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Camisas">Camisas</button>
+                <button onclick="filterProducts('Shorts')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Shorts">Shorts</button>
+                <button onclick="filterProducts('Bermudas')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Bermudas">Bermudas</button>
+                <button onclick="filterProducts('Hoodies')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Hoodies">Hoodies</button>
+                <button onclick="filterProducts('Monos')" class="filter-btn hover:text-arkon-red transition-colors" data-category="Monos">Monos</button>
+            </div>
         </div>
-    </section>
+
+        <div id="shop-product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12"></div>
+        <div id="no-results" class="hidden text-center py-20"><p class="font-mono text-gray-500">No se encontraron productos en esta categoría.</p></div>
+    </div>
+
 
     <!-- FOOTER -->
-    <footer class="bg-[#050505] border-t border-white/10 pt-20 pb-8 px-6 text-center md:text-left">
+    <footer class="bg-[#050505] border-t border-white/10 pt-20 pb-8 px-6 text-center md:text-left mt-auto">
         <div class="max-w-8xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
                 <h2 class="font-display text-2xl uppercase mb-2">Maison Arkon</h2>
-                <p class="text-gray-500 text-sm">Streetwear de lujo. ID de Sesión: <span id="user-id-display" class="font-mono text-xs text-gray-400">Cargando...</span></p>
+                <p class="text-gray-500 text-sm">Streetwear de lujo. ID: <span id="user-id-display" class="font-mono text-xs text-gray-400">...</span></p>
                 <div id="status-message" class="mt-2 text-xs text-red-400 hidden"></div>
             </div>
             <div class="md:text-right text-gray-600 text-xs font-mono uppercase">
@@ -185,642 +230,300 @@
         </div>
     </footer>
 
-    <!-- ========================================================================= -->
-    <!-- MODAL DE VISTA DE PRODUCTO (Detalle, Tallas, Colores) -->
-    <!-- ========================================================================= -->
+    <!-- MODAL PRODUCTO -->
     <div id="product-modal" class="fixed inset-0 bg-arkon-black/90 backdrop-blur-sm z-50 hidden overflow-y-auto" onclick="if(event.target.id === 'product-modal') closeModal()">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="arkon-modal-card rounded-xl shadow-2xl m-4 w-full max-w-5xl p-6 relative" onclick="event.stopPropagation()">
-                
-                <!-- Botón de Cerrar -->
-                <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-arkon-red transition duration-200">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-arkon-red transition duration-200"><i data-lucide="x" class="w-6 h-6"></i></button>
                 <div id="modal-content" class="grid md:grid-cols-2 gap-8">
-                    <!-- Columna de Imagen -->
-                    <div class="md:sticky md:top-6">
-                        <img id="modal-product-image" src="" alt="Producto seleccionado" class="w-full h-auto object-cover rounded-md border border-white/10 shadow-xl">
-                    </div>
-
-                    <!-- Columna de Detalles y Opciones -->
+                    <div class="md:sticky md:top-6"><img id="modal-product-image" src="" class="w-full h-auto object-cover rounded-md border border-white/10 shadow-xl"></div>
                     <div class="flex flex-col">
                         <h2 id="modal-product-name" class="font-display text-4xl uppercase text-arkon-white mb-2"></h2>
                         <p id="modal-product-price" class="font-mono text-3xl font-bold text-arkon-red mb-4"></p>
-                        
                         <p id="modal-product-description" class="text-gray-400 leading-relaxed mb-6 border-l-2 border-arkon-red/50 pl-3 text-sm"></p>
-
-                        <!-- Selector de Color -->
-                        <div id="color-selector" class="mb-6">
-                            <h3 class="font-mono text-xs uppercase text-gray-300 mb-2">Color: <span id="selected-color-name" class="font-normal text-arkon-red"></span></h3>
-                            <div class="flex space-x-3">
-                                <!-- Botones de color -->
-                            </div>
-                        </div>
-
-                        <!-- Selector de Talla -->
-                        <div id="size-selector" class="mb-8">
-                            <h3 class="font-mono text-xs uppercase text-gray-300 mb-2">Talla: <span id="selected-size-name" class="font-normal text-arkon-red"></span></h3>
-                            <div class="flex flex-wrap gap-3">
-                                <!-- Botones de talla -->
-                            </div>
-                        </div>
                         
-                        <!-- Botón Añadir al Carrito -->
-                        <button id="add-to-cart-btn" class="btn-primary flex items-center justify-center gap-2 mt-auto disabled:opacity-30 disabled:cursor-not-allowed">
-                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                            Añadir al Carrito
-                        </button>
+                        <!-- SECCION GEMINI AI STYLIST -->
+                        <div class="mb-6 border-t border-white/10 pt-4">
+                            <button id="ai-stylist-btn" onclick="askGeminiStylist()" class="group/ai flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-arkon-white transition-colors">
+                                <span class="bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text font-bold group-hover/ai:text-white transition-all">✨ CONSULTAR ESTILISTA VIRTUAL</span>
+                            </button>
+                            <div id="ai-stylist-response" class="hidden mt-3 ai-stylist-block p-4 rounded-lg text-sm text-gray-300 font-mono shadow-inner relative overflow-hidden">
+                                <!-- Efecto de brillo sutil -->
+                                <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 blur-xl rounded-full pointer-events-none"></div>
+                                <div id="ai-content"></div>
+                            </div>
+                        </div>
+
+                        <div id="color-selector" class="mb-6"><h3 class="font-mono text-xs uppercase text-gray-300 mb-2">Color: <span id="selected-color-name" class="font-normal text-arkon-red"></span></h3><div class="flex space-x-3"></div></div>
+                        <div id="size-selector" class="mb-8"><h3 class="font-mono text-xs uppercase text-gray-300 mb-2">Talla: <span id="selected-size-name" class="font-normal text-arkon-red"></span></h3><div class="flex flex-wrap gap-3"></div></div>
+                        <button id="add-to-cart-btn" class="btn-primary flex items-center justify-center gap-2 mt-auto disabled:opacity-30 disabled:cursor-not-allowed"><i data-lucide="plus-circle" class="w-5 h-5"></i> Añadir al Carrito</button>
                     </div>
                 </div>
-                
-                <!-- Mensaje de Notificación (Agregado al Carrito) -->
-                <div id="notification" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-arkon-red text-white py-2 px-4 rounded-lg shadow-xl shadow-arkon-red/50 transition-all duration-300 opacity-0 pointer-events-none">
-                    Añadido al Carrito!
-                </div>
+                <div id="notification" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-arkon-red text-white py-2 px-4 rounded-lg shadow-xl shadow-arkon-red/50 transition-all duration-300 opacity-0 pointer-events-none">Añadido al Carrito!</div>
             </div>
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- MODAL/SIDEBAR DEL CARRITO (Carrito de Compras) -->
-    <!-- ========================================================================= -->
+    <!-- SIDEBAR CARRITO -->
     <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-arkon-black shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-l border-white/10">
-        
-        <!-- Encabezado del Carrito -->
         <div class="p-6 border-b border-white/10 flex justify-between items-center">
             <h3 class="font-display text-2xl text-arkon-white uppercase">Carrito</h3>
-            <button onclick="closeCart()" class="text-gray-400 hover:text-arkon-red">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
+            <button onclick="closeCart()" class="text-gray-400 hover:text-arkon-red"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
-
-        <!-- Contenido del Carrito -->
-        <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 space-y-4">
-            <p id="empty-cart-message" class="text-gray-600 text-center py-10">El carrito está vacío.</p>
+        
+        <div class="flex-grow overflow-y-auto p-6 relative">
+            <div id="cart-items-container" class="space-y-4"></div>
+            <p id="empty-cart-message" class="text-gray-600 text-center py-10 font-mono text-sm hidden">El carrito está vacío.</p>
         </div>
-
-        <!-- Resumen y Checkout -->
-        <div class="p-6 border-t border-white/10">
-            <div class="flex justify-between items-center text-xl font-mono font-bold mb-4">
-                <span>Total:</span>
+        
+        <div class="p-6 border-t border-white/10 bg-[#0c0c0e]">
+            <div class="flex justify-between items-center text-xl font-mono font-bold mb-6">
+                <span class="text-gray-300">Total:</span>
                 <span id="cart-total" class="text-arkon-red">$0.00</span>
             </div>
-            <button onclick="checkout()" class="btn-primary w-full text-lg">
-                Proceder al Pago
+            
+            <!-- Botón de WhatsApp -->
+            <button onclick="checkout()" class="btn-whatsapp w-full">
+                <i data-lucide="message-circle" class="w-5 h-5 fill-current"></i>
+                Finalizar en WhatsApp
             </button>
-            <p class="text-xs text-gray-500 text-center mt-2">Guardado en tiempo real con Firestore.</p>
+            <p class="text-[10px] text-gray-500 text-center mt-3 font-mono">Serás redirigido a WhatsApp para completar tu orden.</p>
         </div>
     </div>
 
-
-    <!-- ========================================================================= -->
-    <!-- LÓGICA DE FIREBASE Y E-COMMERCE (JavaScript) -->
-    <!-- ========================================================================= -->
     <script type="module">
-        
-        // =========================================================================
-        // 1. CONFIGURACIÓN DE FIREBASE (MANDATORIO PARA PERSISTENCIA DEL CARRITO)
-        // =========================================================================
-        
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        setLogLevel('Debug'); // Habilitar logs de debug para Firestore
-
-        // Variables globales proporcionadas por el entorno de Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const apiKey = ""; // API Key injectada por el entorno
         
-        let db;
-        let auth;
-        let userId = null;
-        let isAuthReady = false;
+        let db; let auth; let userId = null; let isAuthReady = false; let cart = [];
 
-        let cart = []; // Estado local del carrito
-
-        // Función de inicialización de Firebase
         async function initializeFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-
-                // Autenticación
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                // Listener de estado de autenticación
+                if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken); else await signInAnonymously(auth);
                 onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        document.getElementById('user-id-display').textContent = userId;
-                        isAuthReady = true;
-                        console.log("Firebase Auth listo. User ID:", userId);
-                        setupCartListener(); // Iniciar listener después de la autenticación
-                        document.getElementById('status-message').classList.add('hidden');
-                    } else {
-                        console.error("No se pudo autenticar.");
-                        const msgEl = document.getElementById('status-message');
-                        msgEl.textContent = "Error de autenticación. El carrito no se guardará.";
-                        msgEl.classList.remove('hidden');
-                    }
+                    if (user) { userId = user.uid; document.getElementById('user-id-display').textContent = userId; isAuthReady = true; setupCartListener(); document.getElementById('status-message').classList.add('hidden'); } 
+                    else { document.getElementById('status-message').textContent = "Error auth."; document.getElementById('status-message').classList.remove('hidden'); }
                 });
-
-            } catch (error) {
-                console.error("Error al inicializar Firebase:", error);
-                const msgEl = document.getElementById('status-message');
-                msgEl.textContent = "Error grave al inicializar Firebase.";
-                msgEl.classList.remove('hidden');
-            }
+            } catch (error) { console.error("Firebase error", error); }
         }
 
-        // =========================================================================
-        // 2. LÓGICA DE FIREBASE FIRESTORE (CARRITO PERSISTENTE)
-        // =========================================================================
+        function getCartDocRef() { if (!userId || !db) return null; return doc(db, `artifacts/${appId}/users/${userId}/cartItems/currentCart`); }
+        async function saveCartToFirestore(newCart) { if (!isAuthReady || !userId) return; const cartRef = getCartDocRef(); if (cartRef) await setDoc(cartRef, { items: newCart, lastUpdated: new Date() }); }
+        function setupCartListener() { if (!isAuthReady || !userId) return; const cartRef = getCartDocRef(); if (cartRef) onSnapshot(cartRef, (doc) => { if (doc.exists()) { cart = doc.data().items || []; } else { cart = []; } renderCart(); }); }
 
-        function getCartDocRef() {
-            if (!userId || !db) return null;
-            // Ruta: /artifacts/{appId}/users/{userId}/cartItems/currentCart
-            return doc(db, `artifacts/${appId}/users/${userId}/cartItems/currentCart`);
-        }
-
-        /**
-         * Guarda el carrito actual en Firestore.
-         */
-        async function saveCartToFirestore(newCart) {
-            if (!isAuthReady || !userId) {
-                console.warn("Auth no está listo. No se puede guardar el carrito.");
-                return;
-            }
-            const cartRef = getCartDocRef();
-            if (cartRef) {
-                try {
-                    // Guardamos el array de items
-                    await setDoc(cartRef, { items: newCart, lastUpdated: new Date() });
-                    console.log("Carrito guardado en Firestore.");
-                } catch (e) {
-                    console.error("Error al guardar el carrito:", e);
-                }
-            }
-        }
-
-        /**
-         * Configura el listener para escuchar cambios en el carrito en tiempo real.
-         */
-        function setupCartListener() {
-            if (!isAuthReady || !userId) return;
-
-            const cartRef = getCartDocRef();
-            if (cartRef) {
-                onSnapshot(cartRef, (doc) => {
-                    if (doc.exists()) {
-                        // Carga el carrito desde la base de datos
-                        const data = doc.data();
-                        cart = data.items || [];
-                        console.log("Carrito cargado desde Firestore:", cart);
-                    } else {
-                        // El documento no existe, inicializamos el carrito vacío
-                        cart = [];
-                        console.log("Documento de carrito no existe, inicializando vacío.");
-                    }
-                    renderCart(); // Renderiza la interfaz de usuario con los datos actualizados
-                }, (error) => {
-                    console.error("Error en el listener de carrito:", error);
-                });
-            }
-        }
-
-        // =========================================================================
-        // 3. DATOS DE PRODUCTOS Y ESTADO LOCAL DE LA APLICACIÓN
-        // =========================================================================
-
-        // Producto seleccionado actualmente para el modal
-        let selectedProduct = null;
-        let selectedOptions = { size: null, color: null };
-
-        // Lista de productos que coinciden con tu catálogo visual
+        // DATOS
         const products = [
-            {
-                id: 1,
-                name: "Gothic Logo Tee",
-                price: 15.00,
-                description: "Camiseta oversized con logo gótico en relieve, 100% algodón orgánico de 300 GSM. Estilo premium y durabilidad superior.",
-                image: "camiseta_crema.jpg", // Usa el nombre de archivo del usuario
-                colors: [
-                    { name: "Cream", hex: "#f5f5dc", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1780&auto=format&fit=crop" },
-                    { name: "Black", hex: "#000000", image: "https://placehold.co/600x600/000000/ffffff?text=Gothic+Tee+Black" },
-                ],
-                sizes: ["S", "M", "L", "XL"],
-                tag: "Best Seller"
-            },
-            {
-                id: 2,
-                name: "Chrome logo Tee",
-                price: 15.00,
-                description: "Camiseta de algodón pesado con logo 'Chrome' serigrafiado. Un básico de la colección, ideal para layering.",
-                image: "camiseta_blanca.jpg",
-                colors: [
-                    { name: "White", hex: "#ffffff", image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1887&auto=format&fit=crop" },
-                    { name: "Ash Grey", hex: "#a0a0a0", image: "https://placehold.co/600x600/a0a0a0/ffffff?text=Chrome+Tee+Ash" },
-                ],
-                sizes: ["S", "M", "L", "XL"],
-                tag: null
-            },
-            {
-                id: 3,
-                name: "Chaos Patch Denim",
-                price: 35.00,
-                description: "Shorts de denim vintage con parches y bordados customizados. Ajuste relajado a la rodilla.",
-                image: "short.jpg",
-                colors: [
-                    { name: "Vintage Blue", hex: "#3b82f6", image: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=2070&auto=format&fit=crop" },
-                    { name: "Black Wash", hex: "#333333", image: "https://placehold.co/600x600/333333/ffffff?text=Denim+Black+Wash" },
-                ],
-                sizes: ["28", "30", "32", "34", "36"],
-                tag: "Limited"
-            },
-            {
-                id: 4,
-                name: "The Arkon Look",
-                price: 185.00,
-                description: "Set completo que incluye sudadera con capucha y pantalón jogger, ideal para un look total 'Maison Arkon'.",
-                image: "portada.jpg",
-                colors: [
-                    { name: "Graphite", hex: "#27272a", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop" },
-                    { name: "Off-White", hex: "#f3f4f6", image: "https://placehold.co/600x600/f3f4f6/000000?text=Arkon+Set+White" },
-                ],
-                sizes: ["M", "L", "XL"],
-                tag: null
-            },
+            { id: 1, name: "Gothic Logo Tee", price: 15.00, category: "Camisas", description: "Camiseta oversized logo gótico.", image: "camiseta_crema.jpg", colors: [{ name: "Cream", hex: "#f5f5dc", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab" }, { name: "Black", hex: "#000", image: "https://placehold.co/600x600/000/fff" }], sizes: ["S", "M", "L", "XL"], tag: "Best Seller" },
+            { id: 2, name: "Chrome logo Tee", price: 15.00, category: "Camisas", description: "Camiseta algodón pesado logo Chrome.", image: "camiseta_blanca.jpg", colors: [{ name: "White", hex: "#fff", image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a" }], sizes: ["S", "M", "L", "XL"], tag: null },
+            { id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Shorts", description: "Shorts denim vintage con parches.", image: "short.jpg", colors: [{ name: "Vintage Blue", hex: "#3b82f6", image: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b" }], sizes: ["28", "30", "32"], tag: "Limited" },
+            { id: 5, name: "Cargo Tech Bermuda", price: 45.00, category: "Bermudas", description: "Bermuda técnica multipolsillos negro mate.", image: "https://images.unsplash.com/photo-1696541014392-540c490a0279", colors: [{ name: "Black Matte", hex: "#111", image: "https://images.unsplash.com/photo-1696541014392-540c490a0279" }], sizes: ["30", "32", "34"], tag: "New" },
+            { id: 6, name: "Arkon Core Hoodie", price: 85.00, category: "Hoodies", description: "Hoodie heavyweight 500GSM. Corte boxy.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7", colors: [{ name: "Ash Grey", hex: "#888", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7" }], sizes: ["M", "L", "XL"], tag: null },
+            { id: 4, name: "The Arkon Look", price: 185.00, category: "Monos", description: "Set completo sudadera y jogger.", image: "portada.jpg", colors: [{ name: "Graphite", hex: "#27272a", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b" }], sizes: ["M", "L", "XL"], tag: "Bundle" },
+            { id: 7, name: "Nylon Track Pants", price: 65.00, category: "Monos", description: "Pantalones de nylon estilo retro.", image: "https://images.unsplash.com/photo-1552160753-117159d7419f", colors: [{ name: "Navy", hex: "#000080", image: "https://images.unsplash.com/photo-1552160753-117159d7419f" }], sizes: ["S", "M", "L"], tag: null }
         ];
 
-        // =========================================================================
-        // 4. FUNCIONALIDAD DEL CATÁLOGO Y MODAL DE PRODUCTO
-        // =========================================================================
+        let selectedProduct = null; let selectedOptions = { size: null, color: null };
 
-        /**
-         * Renderiza las tarjetas de productos en la cuadrícula principal, reemplazando el HTML estático.
-         */
-        function renderProducts() {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = products.map(product => `
-                <div class="group cursor-pointer" data-product-id="${product.id}" onclick="openModal(${product.id})">
-                    <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
-                        <img src="${product.image}" class="p-0" alt="${product.name}"
-                            onerror="this.src='https://placehold.co/600x750/1a1a1a/ef4444?text=${product.name.replace(/ /g, '+')}';">
-                        ${product.tag ? `<div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">${product.tag}</div>` : ''}
-                    </div>
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-lg uppercase">${product.name}</h3>
-                            <p class="text-sm text-gray-500 font-mono">${product.colors[0].name} / ${product.sizes.join(', ')}</p>
-                        </div>
-                        <span class="font-mono text-sm font-bold">$${product.price.toFixed(2)}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        // Exponer al scope global para que el HTML pueda llamarlas
-        window.openModal = openModal;
-        window.closeModal = closeModal;
-        window.selectOption = selectOption;
-        window.addToCart = addToCart;
+        // LOGICA UI
+        window.navigateTo = (viewId, filter = 'all') => {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-shop').classList.add('hidden');
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            window.scrollTo(0, 0);
+            if(viewId === 'shop') filterProducts(filter);
+        };
 
-        /**
-         * Abre el modal con los detalles del producto.
-         * @param {number} productId - ID del producto a mostrar.
-         */
-        function openModal(productId) {
-            selectedProduct = products.find(p => p.id === productId);
-            if (!selectedProduct) return;
-
-            // Inicializar opciones seleccionadas con el primer valor por defecto
-            selectedOptions = {
-                size: selectedProduct.sizes[0] || null,
-                color: selectedProduct.colors[0]?.name || null
-            };
-
-            const imageEl = document.getElementById('modal-product-image');
-            const nameEl = document.getElementById('modal-product-name');
-            const priceEl = document.getElementById('modal-product-price');
-            const descEl = document.getElementById('modal-product-description');
-            
-            // Llenar campos de texto
-            nameEl.textContent = selectedProduct.name;
-            priceEl.textContent = `$${selectedProduct.price.toFixed(2)}`;
-            descEl.textContent = selectedProduct.description;
-
-            // Renderizar selectores de color y talla
-            renderColorSelectors();
-            renderSizeSelectors();
-
-            // Sincronizar imagen y nombre de color inicial
-            updateModalImageAndColorName(selectedProduct.colors[0]);
-
-            // Mostrar modal
-            document.getElementById('product-modal').classList.remove('hidden');
-            document.body.classList.add('overflow-hidden'); // Previene scroll en el body
-            
-            // Reemplazar iconos de lucide dentro del modal
+        window.filterProducts = (category) => {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.category === category));
+            const grid = document.getElementById('shop-product-grid');
+            const filtered = category === 'all' || category === 'new' ? products : products.filter(p => p.category === category);
+            if (filtered.length === 0) { grid.innerHTML = ''; document.getElementById('no-results').classList.remove('hidden'); return; }
+            document.getElementById('no-results').classList.add('hidden');
+            grid.innerHTML = filtered.map(product => createProductCard(product)).join('');
             lucide.createIcons();
+        };
+
+        function createProductCard(product) {
+            return `<div class="group cursor-pointer animate-fade-in" onclick="openModal(${product.id})">
+                <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
+                    <img src="${product.image}" class="p-0" alt="${product.name}" onerror="this.src='https://placehold.co/600x750/1a1a1a/ef4444?text=Arkon'">
+                    ${product.tag ? `<div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">${product.tag}</div>` : ''}
+                </div>
+                <div class="flex justify-between items-start">
+                    <div><h3 class="font-bold text-lg uppercase">${product.name}</h3><p class="text-sm text-gray-500 font-mono">${product.category}</p></div>
+                    <span class="font-mono text-sm font-bold">$${product.price.toFixed(2)}</span>
+                </div>
+            </div>`;
         }
 
-        /**
-         * Cierra el modal de vista de producto.
-         */
-        function closeModal() {
-            document.getElementById('product-modal').classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-            selectedProduct = null;
-            selectedOptions = { size: null, color: null };
-        }
-
-        /**
-         * Actualiza la imagen principal y el texto del color seleccionado.
-         */
-        function updateModalImageAndColorName(color) {
-            const imageEl = document.getElementById('modal-product-image');
-            const colorNameEl = document.getElementById('selected-color-name');
+        // MODAL
+        window.openModal = (id) => {
+            selectedProduct = products.find(p => p.id === id); if(!selectedProduct) return;
+            selectedOptions = { size: selectedProduct.sizes[0], color: selectedProduct.colors[0].name };
             
-            if (color) {
-                // Usar la imagen específica del color o la principal si no hay específica
-                imageEl.src = color.image || selectedProduct.image;
-                colorNameEl.textContent = color.name;
-                selectedOptions.color = color.name;
-            }
-            // Habilitar/Deshabilitar el botón si las opciones están listas
-            document.getElementById('add-to-cart-btn').disabled = !(selectedOptions.color && selectedOptions.size);
+            // UI Update
+            document.getElementById('modal-product-name').textContent = selectedProduct.name;
+            document.getElementById('modal-product-price').textContent = `$${selectedProduct.price.toFixed(2)}`;
+            document.getElementById('modal-product-description').textContent = selectedProduct.description;
+            
+            // Reset AI Stylist
+            document.getElementById('ai-stylist-response').classList.add('hidden');
+            document.getElementById('ai-content').innerHTML = '';
+            document.getElementById('ai-stylist-btn').innerHTML = `<span class="bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text font-bold group-hover/ai:text-white transition-all">✨ CONSULTAR ESTILISTA VIRTUAL</span>`;
+            document.getElementById('ai-stylist-btn').disabled = false;
+
+            renderSelectors(); updateModalImage(selectedProduct.colors[0]);
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); lucide.createIcons();
+        };
+
+        window.closeModal = () => { document.getElementById('product-modal').classList.add('hidden'); document.body.classList.remove('overflow-hidden'); };
+
+        function renderSelectors() {
+            document.querySelector('#color-selector .flex').innerHTML = selectedProduct.colors.map(c => 
+                `<button onclick="selectOption('color', '${c.name}')" style="background-color:${c.hex}" class="w-8 h-8 rounded-full border-2 ${selectedOptions.color === c.name ? 'border-white ring-2 ring-arkon-red' : 'border-gray-600'}"></button>`
+            ).join('');
+            document.querySelector('#size-selector .flex').innerHTML = selectedProduct.sizes.map(s => 
+                `<button onclick="selectOption('size', '${s}')" class="px-4 py-2 border ${selectedOptions.size === s ? 'bg-arkon-red border-arkon-red text-white' : 'border-gray-700 text-gray-400'}">${s}</button>`
+            ).join('');
         }
 
+        window.selectOption = (type, val) => {
+            selectedOptions[type] = val;
+            if(type === 'color') updateModalImage(selectedProduct.colors.find(c => c.name === val));
+            renderSelectors();
+        };
 
-        /**
-         * Renderiza los botones de selección de color.
-         */
-        function renderColorSelectors() {
-            const container = document.querySelector('#color-selector .flex');
-            container.innerHTML = selectedProduct.colors.map(color => `
-                <button
-                    onclick="selectOption('color', '${color.name}')"
-                    title="${color.name}"
-                    style="background-color: ${color.hex}; ${color.name === 'White' || color.name === 'Cream' || color.name === 'Off-White' ? 'border: 1px solid #333;' : ''}"
-                    class="w-8 h-8 rounded-full border-4 ${selectedOptions.color === color.name ? 'border-arkon-red ring-2 ring-arkon-red' : 'border-transparent hover:ring-2 hover:ring-gray-600'} transition duration-200"
-                    data-color-name="${color.name}"
-                    data-color-image="${color.image}"
-                ></button>
-            `).join('');
-            updateColorSelectionStyles(selectedOptions.color);
-        }
+        function updateModalImage(color) { document.getElementById('modal-product-image').src = color.image || selectedProduct.image; document.getElementById('selected-color-name').textContent = color.name; }
 
-        /**
-         * Renderiza los botones de selección de talla.
-         */
-        function renderSizeSelectors() {
-            const container = document.querySelector('#size-selector .flex');
-            container.innerHTML = selectedProduct.sizes.map(size => `
-                <button
-                    onclick="selectOption('size', '${size}')"
-                    class="py-2 px-4 rounded-lg border-2 font-mono text-sm transition duration-200
-                        ${selectedOptions.size === size ? 'bg-arkon-red text-arkon-white border-arkon-red shadow-md shadow-arkon-red/30' : 'bg-arkon-black text-gray-300 border-gray-700 hover:bg-[#1a1a1a]'}
-                    "
-                >${size}</button>
-            `).join('');
-            document.getElementById('selected-size-name').textContent = selectedOptions.size;
-        }
+        // =========================================================================
+        // GEMINI AI STYLIST ✨
+        // =========================================================================
+        window.askGeminiStylist = async () => {
+            if (!selectedProduct) return;
+            const btn = document.getElementById('ai-stylist-btn');
+            const responseDiv = document.getElementById('ai-stylist-response');
+            const contentDiv = document.getElementById('ai-content');
+            
+            // UI Loading
+            btn.disabled = true;
+            btn.innerHTML = `<span class="text-gray-400 flex items-center gap-2"><i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> ANALIZANDO VIBE...</span>`;
+            lucide.createIcons();
 
-        /**
-         * Actualiza el estado local y los estilos al seleccionar una opción.
-         */
-        function selectOption(type, value) {
-            selectedOptions[type] = value;
+            try {
+                // Prompt mejorado para el estilista urbano
+                const prompt = `Actúa como un estilista de streetwear de lujo ultra-cool para la marca Maison Arkon. 
+                El usuario está viendo este producto: "${selectedProduct.name}" (${selectedProduct.description}).
+                
+                Tu tarea: Dame 3 consejos de outfit (bullet points) sobre cómo combinar esta prenda para lograr un look icónico.
+                Usa lenguaje urbano pero sofisticado (ej: "layers", "sneakers chunky", "monocromático").
+                Responde en Español. Sé breve y directo.`;
 
-            if (type === 'color') {
-                const selectedColor = selectedProduct.colors.find(c => c.name === value);
-                if (selectedColor) {
-                    updateModalImageAndColorName(selectedColor);
-                    updateColorSelectionStyles(value);
-                }
-            } else if (type === 'size') {
-                renderSizeSelectors(); // Volver a renderizar para actualizar el estilo del botón
-            }
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
 
-            // Validar que ambas opciones estén seleccionadas para habilitar el botón
-            document.getElementById('add-to-cart-btn').disabled = !(selectedOptions.color && selectedOptions.size);
-        }
+                const data = await response.json();
+                const advice = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-        /**
-         * Actualiza el estilo visual de los botones de color.
-         */
-        function updateColorSelectionStyles(selectedColorName) {
-            document.querySelectorAll('#color-selector button').forEach(button => {
-                const colorName = button.getAttribute('data-color-name');
-                if (colorName === selectedColorName) {
-                    button.classList.add('border-arkon-red', 'ring-2', 'ring-arkon-red');
-                    button.classList.remove('border-transparent', 'hover:ring-2', 'hover:ring-gray-600');
+                if (advice) {
+                    contentDiv.innerHTML = `<h4 class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-2 uppercase text-xs tracking-widest">⚡ CONSEJO DEL ESTILISTA</h4><div class="whitespace-pre-line leading-relaxed">${advice}</div>`;
+                    responseDiv.classList.remove('hidden');
                 } else {
-                    button.classList.remove('border-arkon-red', 'ring-2', 'ring-arkon-red');
-                    button.classList.add('border-transparent', 'hover:ring-2', 'hover:ring-gray-600');
+                    throw new Error("Sin respuesta");
                 }
-            });
-        }
-        
-        // =========================================================================
-        // 5. FUNCIONALIDAD DEL CARRITO
-        // =========================================================================
 
-        /**
-         * Añade el producto seleccionado y sus opciones al carrito.
-         */
-        function addToCart() {
-            if (!selectedProduct || !selectedOptions.size || !selectedOptions.color) {
-                console.error("Opciones incompletas.");
-                return;
+            } catch (error) {
+                console.error(error);
+                alert("El estilista virtual está en una sesión de fotos. Intenta luego.");
+            } finally {
+                // Restaurar botón (estado completado)
+                btn.innerHTML = `<span class="bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text font-bold">✨ CONSULTAR ESTILISTA VIRTUAL</span>`;
+                btn.disabled = false;
+                lucide.createIcons();
             }
+        };
 
-            const item = {
-                id: crypto.randomUUID(), // ID único para el item del carrito
-                productId: selectedProduct.id,
-                name: selectedProduct.name,
-                price: selectedProduct.price,
-                image: selectedProduct.colors.find(c => c.name === selectedOptions.color)?.image || selectedProduct.image,
-                size: selectedOptions.size,
-                color: selectedOptions.color,
-                quantity: 1
-            };
 
-            // Verificar si ya existe un item con la misma talla y color
-            const existingItemIndex = cart.findIndex(
-                i => i.productId === item.productId && i.size === item.size && i.color === item.color
-            );
+        // CART LOGIC
+        window.addToCart = () => {
+            const item = { id: crypto.randomUUID(), productId: selectedProduct.id, name: selectedProduct.name, price: selectedProduct.price, image: selectedProduct.image, size: selectedOptions.size, color: selectedOptions.color, quantity: 1 };
+            const existing = cart.find(i => i.productId === item.productId && i.size === item.size && i.color === item.color);
+            if(existing) existing.quantity++; else cart.push(item);
+            saveCartToFirestore(cart); showNotification(); closeModal(); renderCart();
+        };
 
-            if (existingItemIndex > -1) {
-                // Si existe, incrementa la cantidad
-                cart[existingItemIndex].quantity += 1;
-            } else {
-                // Si no existe, añade el nuevo item
-                cart.push(item);
-            }
-
-            saveCartToFirestore(cart);
-            showNotification();
-            closeModal();
-            renderCart();
-        }
+        function showNotification() { const n = document.getElementById('notification'); n.classList.remove('opacity-0'); setTimeout(() => n.classList.add('opacity-0'), 2000); }
         
-        /**
-         * Muestra una notificación temporal de éxito.
-         */
-        function showNotification() {
-            const notif = document.getElementById('notification');
-            notif.classList.remove('opacity-0', 'pointer-events-none');
-            notif.classList.add('opacity-100');
-            setTimeout(() => {
-                notif.classList.remove('opacity-100');
-                notif.classList.add('opacity-0', 'pointer-events-none');
-            }, 2000);
-        }
-
-        /**
-         * Renderiza los items del carrito y actualiza el total.
-         */
         function renderCart() {
             const container = document.getElementById('cart-items-container');
+            const emptyMsg = document.getElementById('empty-cart-message');
             const totalEl = document.getElementById('cart-total');
             const countEl = document.getElementById('cart-count');
-            const emptyMsg = document.getElementById('empty-cart-message');
 
-            if (cart.length === 0) {
-                container.innerHTML = '';
-                emptyMsg.classList.remove('hidden');
-                totalEl.textContent = `$0.00`;
-                countEl.textContent = '0';
-                return;
+            if(cart.length === 0) { 
+                container.innerHTML = ''; 
+                if(emptyMsg) emptyMsg.classList.remove('hidden'); 
+                if(totalEl) totalEl.textContent = '$0.00'; 
+                if(countEl) countEl.textContent = '0'; 
+                return; 
             }
-
-            emptyMsg.classList.add('hidden');
-
-            const itemsHtml = cart.map(item => `
-                <div class="flex items-center space-x-4 p-3 bg-[#1a1a1a] rounded-lg shadow-inner">
-                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md border border-gray-700">
-                    <div class="flex-grow">
-                        <p class="font-semibold text-arkon-white">${item.name}</p>
-                        <p class="text-xs text-gray-500 font-mono">Talla: ${item.size} | Color: ${item.color}</p>
-                        <p class="text-lg font-bold text-arkon-red mt-1">$${(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <input
-                            type="number"
-                            value="${item.quantity}"
-                            min="1"
-                            class="w-14 text-center border border-gray-700 bg-arkon-black rounded-lg p-1 text-gray-300"
-                            onchange="updateQuantity('${item.id}', this.value)"
-                        >
-                        <button onclick="removeItem('${item.id}')" class="text-gray-500 hover:text-arkon-red transition duration-200">
-                            <i data-lucide="trash-2" class="w-5 h-5"></i>
-                        </button>
-                    </div>
+            
+            if(emptyMsg) emptyMsg.classList.add('hidden');
+            
+            container.innerHTML = cart.map(item => `
+                <div class="flex items-center space-x-4 p-3 bg-[#1a1a1a] rounded-lg border border-white/5">
+                    <img src="${item.image}" class="w-16 h-16 object-cover rounded border border-gray-700">
+                    <div class="flex-grow"><p class="font-bold text-sm text-arkon-white">${item.name}</p><p class="text-[10px] text-gray-400 font-mono uppercase">${item.size} / ${item.color}</p><p class="text-arkon-red font-bold text-sm">$${(item.price*item.quantity).toFixed(2)}</p></div>
+                    <div class="flex items-center gap-2"><button onclick="updateQty('${item.id}', -1)" class="w-6 h-6 flex items-center justify-center bg-gray-800 rounded hover:bg-arkon-red text-white">-</button><span class="text-xs font-mono w-4 text-center">${item.quantity}</span><button onclick="updateQty('${item.id}', 1)" class="w-6 h-6 flex items-center justify-center bg-gray-800 rounded hover:bg-arkon-red text-white">+</button></div>
                 </div>
             `).join('');
-
-            container.innerHTML = itemsHtml;
             
-            // Reemplazar iconos de lucide después de inyectar contenido
+            if(totalEl) totalEl.textContent = `$${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toFixed(2)}`;
+            if(countEl) countEl.textContent = cart.reduce((acc, i) => acc + i.quantity, 0);
             lucide.createIcons();
-
-            // Calcular y mostrar el total
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            totalEl.textContent = `$${total.toFixed(2)}`;
-
-            // Calcular y mostrar la cantidad total de items
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            countEl.textContent = totalItems.toString();
         }
 
-        window.updateQuantity = updateQuantity;
-        window.removeItem = removeItem;
+        window.updateQty = (id, delta) => {
+            const idx = cart.findIndex(i => i.id === id); if(idx === -1) return;
+            cart[idx].quantity += delta; if(cart[idx].quantity <= 0) cart.splice(idx, 1);
+            saveCartToFirestore(cart); renderCart();
+        };
 
-        /**
-         * Actualiza la cantidad de un item en el carrito.
-         */
-        function updateQuantity(itemId, quantity) {
-            const newQuantity = parseInt(quantity);
-            if (isNaN(newQuantity) || newQuantity < 1) {
-                // Si la cantidad es inválida o menor a 1, eliminamos el item
-                removeItem(itemId);
-                return;
-            }
-            
-            const itemIndex = cart.findIndex(item => item.id === itemId);
-            if (itemIndex > -1) {
-                cart[itemIndex].quantity = newQuantity;
-                saveCartToFirestore(cart);
-            }
-        }
+        // CHECKOUT
+        window.checkout = () => {
+            if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
+            const whatsappNumber = "584165530268"; 
+            let message = "Hola Maison Arkon, me gustaría finalizar mi pedido:\n\n";
+            cart.forEach(item => { message += `▪ ${item.quantity}x ${item.name} | Talla: ${item.size} | Color: ${item.color}\n`; });
+            const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            message += `\n*TOTAL A PAGAR: $${total.toFixed(2)}*`;
+            message += `\n\nQuedo atento a los métodos de pago.`;
+            const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        };
 
-        /**
-         * Elimina un item del carrito.
-         */
-        function removeItem(itemId) {
-            cart = cart.filter(item => item.id !== itemId);
-            saveCartToFirestore(cart);
-        }
+        window.openCart = () => { document.getElementById('cart-sidebar').classList.remove('translate-x-full'); renderCart(); };
+        window.closeCart = () => { document.getElementById('cart-sidebar').classList.add('translate-x-full'); };
+        document.getElementById('open-cart-btn').onclick = window.openCart;
 
-        /**
-         * Abre/cierra el sidebar del carrito.
-         */
-        function openCart() {
-            document.getElementById('cart-sidebar').classList.remove('translate-x-full');
-            document.body.classList.add('overflow-hidden');
-            renderCart(); // Asegurar que el carrito se renderice al abrir
-        }
-
-        function closeCart() {
-            document.getElementById('cart-sidebar').classList.add('translate-x-full');
-            document.body.classList.remove('overflow-hidden');
-        }
-        
-        // Asignar el evento al botón de la barra de navegación
-        document.getElementById('open-cart-btn').onclick = openCart;
-        window.closeCart = closeCart;
-
-
-        /**
-         * Simula el proceso de checkout/pago.
-         */
-        function checkout() {
-            if (cart.length === 0) {
-                 // Usamos window.prompt para simular una 'modal' simple sin usar alert/confirm
-                 window.prompt("Tu carrito está vacío. Agrega productos antes de pagar.");
-                 return;
-            }
-            
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
-
-            // Resumen de la orden
-            const cartSummary = cart.map(item => `\n- ${item.quantity}x ${item.name} (${item.color}/${item.size})`).join('');
-            
-            let message = "¡Felicitaciones! Has iniciado el proceso de pago. \n\n";
-            message += `RESUMEN DE ORDEN (Total: $${total}):\n${cartSummary}\n\n`;
-            message += "En un sitio web real, esto te llevaría a una pasarela de pago segura (ej: Stripe, PayPal).";
-
-            // Usamos window.prompt para simular una 'modal' de confirmación sin usar alert/confirm
-            window.prompt(message, "Continuar al Pago");
-        }
-        
-        // =========================================================================
-        // 6. INICIO DE LA APLICACIÓN
-        // =========================================================================
         window.onload = () => {
-            renderProducts(); // Renderiza el catálogo
-            initializeFirebase(); // Inicializar Firebase y Autenticación
-            lucide.createIcons(); // Inicializar íconos de Lucide
+            initializeFirebase();
+            document.getElementById('home-product-grid').innerHTML = products.slice(0, 3).map(product => createProductCard(product)).join('');
+            lucide.createIcons();
         };
     </script>
 </body>
