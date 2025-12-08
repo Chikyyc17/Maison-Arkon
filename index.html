@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAISON ARKON | Streetwear Luxury</title>
     
-    <!-- FAVICON (El icono de la pestaña) -->
-    <!-- Asegúrate de tener una imagen llamada 'favicon.png' en tu carpeta -->
+    <!-- FAVICON -->
     <link rel="icon" href="favicon.png" type="image/png">
     
     <!-- Tailwind CSS -->
@@ -39,7 +38,6 @@
                         'marquee': 'marquee 20s linear infinite',
                         'modal-in': 'modal-in 0.3s ease-out forwards',
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         marquee: {
@@ -301,7 +299,11 @@
     <div id="product-modal" class="fixed inset-0 bg-arkon-black/95 backdrop-blur-md z-50 hidden overflow-y-auto" onclick="if(event.target.id === 'product-modal') closeModal()">
         <div class="flex items-center justify-center min-h-screen p-0 md:p-6">
             <div class="arkon-modal-card rounded-none md:rounded-xl shadow-2xl w-full max-w-6xl min-h-screen md:min-h-0 bg-[#09090b] relative flex flex-col md:block" onclick="event.stopPropagation()">
-                <button onclick="closeModal()" class="absolute top-6 right-6 z-50 text-white bg-black/50 p-2 rounded-full hover:bg-arkon-red transition duration-200"><i data-lucide="x" class="w-6 h-6"></i></button>
+                
+                <button onclick="closeModal()" class="absolute top-6 right-6 z-50 text-white bg-black/50 p-2 rounded-full hover:bg-arkon-red transition duration-200">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+
                 <div class="grid md:grid-cols-2 h-full">
                     <div class="relative bg-[#0c0c0e] h-full flex flex-col">
                         <div class="w-full aspect-[4/5] md:h-full bg-[#151515] overflow-hidden relative">
@@ -309,11 +311,13 @@
                         </div>
                         <div id="modal-gallery" class="hidden"></div> 
                     </div>
+
                     <div class="p-6 md:p-12 flex flex-col h-full overflow-y-auto">
                         <div class="mb-auto">
                             <h2 id="modal-product-name" class="font-display text-4xl md:text-5xl uppercase text-arkon-white mb-2 leading-none"></h2>
                             <p id="modal-product-price" class="font-mono text-2xl text-arkon-red mb-6"></p>
                             <p id="modal-product-description" class="text-gray-400 font-sans leading-relaxed mb-8 text-sm md:text-base"></p>
+
                             <div class="mb-8 border-y border-white/10 py-4">
                                 <button id="ai-stylist-btn" onclick="askGeminiStylist()" class="group/ai w-full flex justify-between items-center text-xs font-mono uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
                                     <span class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> Consultar Estilista Virtual</span>
@@ -323,11 +327,25 @@
                                     <div id="ai-content"></div>
                                 </div>
                             </div>
-                            <div class="mb-8"><h3 class="font-mono text-xs uppercase text-gray-500 mb-3 tracking-widest">Color Seleccionado: <span id="selected-color-name" class="text-white"></span></h3><div id="color-selector" class="flex flex-wrap gap-3"></div></div>
-                            <div class="mb-8"><div class="flex justify-between items-end mb-3"><h3 class="font-mono text-xs uppercase text-gray-500 tracking-widest">Talla</h3><button class="text-xs text-gray-500 underline decoration-1 underline-offset-2 hover:text-white">Guía de Tallas</button></div><div id="size-selector" class="grid grid-cols-4 gap-3"></div></div>
+
+                            <div class="mb-8">
+                                <h3 class="font-mono text-xs uppercase text-gray-500 mb-3 tracking-widest">Color Seleccionado: <span id="selected-color-name" class="text-white"></span></h3>
+                                <div id="color-selector" class="flex flex-wrap gap-3"></div>
+                            </div>
+
+                            <div class="mb-8">
+                                <div class="flex justify-between items-end mb-3">
+                                    <h3 class="font-mono text-xs uppercase text-gray-500 tracking-widest">Talla</h3>
+                                </div>
+                                <div id="size-selector" class="grid grid-cols-4 gap-3"></div>
+                            </div>
                         </div>
+
                         <div class="mt-8 pt-6 border-t border-white/10 sticky bottom-0 bg-[#09090b] md:relative md:bg-transparent md:border-t-0 md:pt-0">
-                            <button id="add-to-cart-btn" onclick="addToCart()" class="btn-primary w-full py-4 text-lg uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"><span>Añadir al Carrito</span><i data-lucide="arrow-right" class="w-5 h-5"></i></button>
+                            <button id="add-to-cart-btn" onclick="addToCart()" class="btn-primary w-full py-4 text-lg uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span>Añadir al Carrito</span>
+                                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -356,6 +374,10 @@
         const apiKey = "";
         
         let db; let auth; let userId = null; let isAuthReady = false; let cart = [];
+        let currentCategory = 'all';
+
+        // CONFIGURACIÓN DE URL
+        const SITE_URL = window.location.origin + window.location.pathname.replace('/index.html', '');
 
         // FIREBASE SETUP
         async function initializeFirebase() {
@@ -377,31 +399,20 @@
             { id: 1, name: "Gothic Logo Tee", price: 15.00, category: "Camisas", description: "Camiseta oversized con logo gótico.", image: "camiseta_crema.jpg", colors: [{ name: "Cream", hex: "#f5f5dc" }, { name: "Black", hex: "#000" }], sizes: ["S", "M", "L", "XL"], tag: "Best Seller" },
             { id: 2, name: "Chrome logo Tee", price: 15.00, category: "Camisas", description: "Camiseta algodón pesado logo Chrome.", image: "camiseta_blanca.jpg", colors: [{ name: "White", hex: "#fff" }], sizes: ["S", "M", "L", "XL"], tag: null },
             { id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Shorts", description: "Shorts denim vintage con parches.", image: "short.jpg", colors: [{ name: "Vintage Blue", hex: "#3b82f6" }], sizes: ["28", "30", "32"], tag: "Limited" },
-            { id: 5, name: "Cargo Tech Bermuda", price: 45.00, category: "Bermudas", description: "Bermuda técnica negra.", image: "https://images.unsplash.com/photo-1696541014392-540c490a0279", colors: [{ name: "Black Matte", hex: "#111" }], sizes: ["30", "32", "34"], tag: "New" },
-            { id: 6, name: "Arkon Core Hoodie", price: 85.00, category: "Hoodies", description: "Hoodie heavyweight 500GSM.", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7", colors: [{ name: "Ash Grey", hex: "#888" }], sizes: ["M", "L", "XL"], tag: null },
-            { id: 4, name: "The Arkon Look", price: 185.00, category: "Monos", description: "Set completo sudadera y jogger.", image: "portada.jpg", colors: [{ name: "Graphite", hex: "#27272a" }], sizes: ["M", "L", "XL"], tag: "Bundle" },
-            { id: 7, name: "Nylon Track Pants", price: 25.00, category: "Monos", description: "Pantalones de nylon estilo retro.", image: "https://images.unsplash.com/photo-1552160753-117159d7419f", colors: [{ name: "Navy", hex: "#000080" }], sizes: ["S", "M", "L"], tag: null },
             // NUEVOS PRODUCTOS AÑADIDOS
             { 
-                id: 8, name: "Dune Motion Tee (Front)", price: 15.00, category: "Camisas", 
+                id: 8, name: "Dune Motion Tee (Front)", price: 50.00, category: "Camisas", 
                 description: "Camiseta heavyweight en tono arena con gráfico Arkon 'Motion Blur' en el pecho. Corte boxy fit.", 
-                image: "dune_front.jpg", // NOMBRE ACTUALIZADO PARA LA FOTO DE FRENTE
+                image: "dune_front.jpg", 
                 colors: [{ name: "Sand", hex: "#d2b48c" }], 
                 sizes: ["S", "M", "L", "XL"], tag: "New Drop" 
             },
             { 
-                id: 9, name: "Dune Motion Tee (Back)", price: 15.00, category: "Camisas", 
+                id: 9, name: "Dune Motion Tee (Back)", price: 50.00, category: "Camisas", 
                 description: "Variante 'Back Print' de la serie Dune Motion. Gráfico completo en espalda, frente minimalista.", 
-                image: "dune_back.jpg", // NOMBRE ACTUALIZADO PARA LA FOTO DE ESPALDA
+                image: "dune_back.jpg",
                 colors: [{ name: "Sand", hex: "#d2b48c" }], 
                 sizes: ["S", "M", "L", "XL"], tag: "New Drop" 
-            },
-            { 
-                id: 10, name: "Sand Storm Joggers", price: 20.00, category: "Monos", 
-                description: "Pantalón jogger premium en tono arena. El complemento perfecto para la serie Dune Motion.", 
-                image: "https://images.unsplash.com/photo-1517445312882-7ba43f26bd3c?q=80&w=1974&auto=format&fit=crop", 
-                colors: [{ name: "Sand", hex: "#d2b48c" }], 
-                sizes: ["S", "M", "L"], tag: "Match" 
             }
         ];
 
@@ -586,9 +597,17 @@
             if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
             const whatsappNumber = "584165530268"; 
             let message = "Hola Maison Arkon, me interesa pedir lo siguiente:\n\n";
-            cart.forEach(item => { message += `▪ ${item.quantity}x ${item.name} | Talla: ${item.size} | Color: ${item.color}\n`; });
+            cart.forEach(item => { 
+                let imgLink = item.image;
+                if (!imgLink.startsWith('http')) {
+                    const cleanBase = SITE_URL.endsWith('/') ? SITE_URL.slice(0, -1) : SITE_URL;
+                    const cleanImg = item.image.startsWith('/') ? item.image.slice(1) : item.image;
+                    imgLink = `${cleanBase}/${cleanImg}`;
+                }
+                message += `▪ ${item.quantity}x ${item.name}\n   Talla: ${item.size} | Color: ${item.color}\n   📷 Ver Foto: ${imgLink}\n\n`; 
+            });
             const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-            message += `\n*TOTAL: $${total.toFixed(2)}*`;
+            message += `*TOTAL: $${total.toFixed(2)}*`;
             message += `\n\nQuedo atento a la confirmación.`;
             const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
@@ -612,4 +631,5 @@
     </script>
 </body>
 </html>
+
 
