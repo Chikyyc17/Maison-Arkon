@@ -64,7 +64,13 @@
         ::selection { background-color: #ef4444; color: white; }
         
         .product-image-container { overflow: hidden; position: relative; }
-        .product-image-container img { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
+        /* Transición suave para el cambio de imagen automático */
+        .product-image-container img { 
+            transition: transform 0.5s ease, opacity 0.5s ease; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
         .group:hover .product-image-container img { transform: scale(1.05); }
 
         .btn-hover-effect { position: relative; overflow: hidden; transition: color 0.3s; }
@@ -375,6 +381,7 @@
         
         let db; let auth; let userId = null; let isAuthReady = false; let cart = [];
         let currentCategory = 'all';
+        let gothicSlideshowInterval = null;
 
         // CONFIGURACIÓN DE URL
         const SITE_URL = window.location.origin + window.location.pathname.replace('/index.html', '');
@@ -431,6 +438,33 @@
 
         let selectedProduct = null; let selectedOptions = { size: null, color: null };
 
+        // LOGICA SLIDESHOW
+        function startGothicSlideshow() {
+            if (gothicSlideshowInterval) clearInterval(gothicSlideshowInterval);
+            
+            const gothicProduct = products.find(p => p.id === 1);
+            if (!gothicProduct) return;
+
+            const images = gothicProduct.colors.map(c => c.image);
+            let currentIndex = 0;
+
+            gothicSlideshowInterval = setInterval(() => {
+                const imgElements = document.querySelectorAll(`[data-product-id="1"] img`);
+                if (imgElements.length === 0) return;
+
+                currentIndex = (currentIndex + 1) % images.length;
+                const nextImage = images[currentIndex];
+
+                imgElements.forEach(img => {
+                    img.style.opacity = '0';
+                    setTimeout(() => {
+                        img.src = nextImage;
+                        img.style.opacity = '1';
+                    }, 500); // Wait for fade out transition
+                });
+            }, 3000); // Change every 3 seconds (2s pause + 1s transition)
+        }
+
         // LOGICA UI
         window.navigateTo = (viewId, filter = 'all') => {
             document.getElementById('view-home').classList.add('hidden');
@@ -438,6 +472,9 @@
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             window.scrollTo(0, 0);
             if(viewId === 'shop') filterProducts(filter);
+            
+            // Re-init slideshow if on home or shop (where grid is visible)
+            setTimeout(startGothicSlideshow, 100); 
         };
 
         // FUNCIÓN TOGGLE ACORDEÓN
@@ -474,10 +511,11 @@
             }
             lucide.createIcons();
             if(category !== 'all') window.toggleFilters();
+            setTimeout(startGothicSlideshow, 100);
         };
 
         function createProductCard(product) {
-            return `<div class="group cursor-pointer animate-fade-in" onclick="openModal(${product.id}, this)">
+            return `<div class="group cursor-pointer animate-fade-in" data-product-id="${product.id}" onclick="openModal(${product.id}, this)">
                 <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
                     <img src="${product.image}" class="p-0 h-full w-full object-cover" alt="${product.name}" onerror="this.src='https://placehold.co/600x750/1a1a1a/ef4444?text=Arkon'">
                     ${product.tag ? `<div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">${product.tag}</div>` : ''}
@@ -648,9 +686,8 @@
             initializeFirebase();
             document.getElementById('home-product-grid').innerHTML = products.slice(0, 3).map(product => createProductCard(product)).join('');
             lucide.createIcons();
+            startGothicSlideshow(); // Iniciar slideshow al cargar
         };
     </script>
 </body>
 </html>
-
-
