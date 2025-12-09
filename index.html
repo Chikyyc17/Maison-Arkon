@@ -396,19 +396,32 @@
 
         // DATOS
         const products = [
-            { id: 1, name: "Gothic Logo Tee", price: 15.00, category: "Camisas", description: "Camiseta oversized con logo gótico.", image: "camiseta_crema.jpg", colors: [{ name: "Cream", hex: "#f5f5dc" }, { name: "Black", hex: "#000" }], sizes: ["S", "M", "L", "XL"], tag: "Best Seller" },
+            { 
+                id: 1, name: "Gothic Logo Tee", price: 15.00, category: "Camisas", 
+                description: "Camiseta oversized con logo gótico Arkon en el pecho.", 
+                image: "gothic_cream.jpg", // Default image
+                colors: [
+                    { name: "Cream", hex: "#f5f5dc", image: "gothic_cream.jpg" },
+                    { name: "Black", hex: "#111", image: "gothic_black.jpg" },
+                    { name: "Red", hex: "#ef4444", image: "gothic_red.jpg" },
+                    { name: "Blue", hex: "#1d4ed8", image: "gothic_blue.jpg" },
+                    { name: "Green", hex: "#15803d", image: "gothic_green.jpg" },
+                    { name: "Yellow", hex: "#facc15", image: "gothic_yellow.jpg" }
+                ], 
+                sizes: ["S", "M", "L", "XL"], tag: "Best Seller" 
+            },
             { id: 2, name: "Chrome logo Tee", price: 15.00, category: "Camisas", description: "Camiseta algodón pesado logo Chrome.", image: "camiseta_blanca.jpg", colors: [{ name: "White", hex: "#fff" }], sizes: ["S", "M", "L", "XL"], tag: null },
-            { id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Bermudas", description: "Bermuda denim vintage con parches.", image: "short.jpg", colors: [{ name: "Vintage Blue", hex: "#3b82f6" }], sizes: ["28", "30", "32"], tag: "Limited" },
+            { id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Shorts", description: "Shorts denim vintage con parches.", image: "short.jpg", colors: [{ name: "Vintage Blue", hex: "#3b82f6" }], sizes: ["28", "30", "32"], tag: "Limited" },
             // NUEVOS PRODUCTOS AÑADIDOS
             { 
-                id: 8, name: "Dune Motion Tee (Front)", price: 15.00, category: "Camisas", 
+                id: 8, name: "Dune Motion Tee (Front)", price: 50.00, category: "Camisas", 
                 description: "Camiseta heavyweight en tono arena con gráfico Arkon 'Motion Blur' en el pecho. Corte boxy fit.", 
                 image: "dune_front.jpg", 
                 colors: [{ name: "Sand", hex: "#d2b48c" }], 
                 sizes: ["S", "M", "L", "XL"], tag: "New Drop" 
             },
             { 
-                id: 9, name: "Dune Motion Tee (Back)", price: 15.00, category: "Camisas", 
+                id: 9, name: "Dune Motion Tee (Back)", price: 50.00, category: "Camisas", 
                 description: "Variante 'Back Print' de la serie Dune Motion. Gráfico completo en espalda, frente minimalista.", 
                 image: "dune_back.jpg",
                 colors: [{ name: "Sand", hex: "#d2b48c" }], 
@@ -519,7 +532,14 @@
             else { addBtn.disabled = true; addBtn.style.opacity = '0.5'; addBtn.style.cursor = 'not-allowed'; }
         }
 
-        window.selectOption = (type, val) => { selectedOptions[type] = val; renderSelectors(); };
+        window.selectOption = (type, val) => { 
+            selectedOptions[type] = val;
+            if(type === 'color') {
+                const col = selectedProduct.colors.find(c => c.name === val);
+                if (col.image) document.getElementById('modal-product-image').src = col.image;
+            }
+            renderSelectors(); 
+        };
 
         // GEMINI AI
         window.askGeminiStylist = async () => {
@@ -593,6 +613,7 @@
             saveCartToFirestore(cart); renderCart();
         };
 
+        // CHECKOUT CON FOTOS
         window.checkout = () => {
             if (cart.length === 0) { alert("Tu carrito está vacío."); return; }
             const whatsappNumber = "584165530268"; 
@@ -631,6 +652,5 @@
     </script>
 </body>
 </html>
-
 
 
