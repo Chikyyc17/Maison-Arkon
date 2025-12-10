@@ -65,14 +65,12 @@
         
         .product-image-container { overflow: hidden; position: relative; }
         
-        /* CORRECCIÓN: Clases para la doble imagen del slideshow */
         .product-image-container img { 
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
         }
         
-        /* Esta clase asegura que la transición de opacidad sea suave */
         .smooth-fade {
             transition: opacity 1s ease-in-out;
         }
@@ -170,14 +168,11 @@
     <div id="view-home" class="animate-fade-in">
         <header class="relative h-screen w-full overflow-hidden flex items-center justify-center">
             <div class="absolute inset-0 z-0">
-                <!-- Video de fondo (si existe) -->
-                <video autoplay loop muted playsinline class="w-full h-full object-cover">
-                    <source src="portada.mp4" type="video/mp4">
-                    <!-- Fallback -->
-                    <img src="portada.jpg" class="w-full h-full object-cover object-top opacity-60" alt="Maison Arkon Campaign">
-                </video>
-                <div class="absolute inset-0 bg-black/40"></div>
-                <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/60 via-transparent to-arkon-black"></div>
+                <img src="portada.jpg" 
+                     class="w-full h-full object-cover object-top opacity-60" 
+                     alt="Maison Arkon Campaign"
+                     onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'">
+                <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/30 via-transparent to-arkon-black"></div>
             </div>
 
             <div class="relative z-10 text-center px-4 max-w-5xl">
@@ -388,7 +383,7 @@
         
         let db; let auth; let userId = null; let isAuthReady = false; let cart = [];
         let currentCategory = 'all';
-        let gothicSlideshowInterval = null;
+        let productSlideshows = {}; // Almacena los intervalos de cada producto
 
         // CONFIGURACIÓN DE URL
         const SITE_URL = window.location.origin + window.location.pathname.replace('/index.html', '');
@@ -428,68 +423,87 @@
             { id: 3, name: "Chaos Patch Denim", price: 35.00, category: "Shorts", description: "Shorts denim vintage con parches.", image: "short.jpg", colors: [{ name: "Vintage Blue", hex: "#3b82f6" }], sizes: ["28", "30", "32"], tag: "Limited" },
             // NUEVOS PRODUCTOS AÑADIDOS
             { 
-                id: 8, name: "Dune Motion Tee (Front)", price: 50.00, category: "Camisas", 
+                id: 8, name: "Dune Motion Tee (Front)", price: 16.50, category: "Camisas", 
                 description: "Camiseta heavyweight en tono arena con gráfico Arkon 'Motion Blur' en el pecho. Corte boxy fit.", 
-                image: "dune_front.jpg", 
-                colors: [{ name: "Sand", hex: "#d2b48c" }], 
+                image: "dune_front_black.jpg", 
+                colors: [
+                    { name: "Black", hex: "#111", image: "dune_front_black.jpg" },
+                    { name: "Cream", hex: "#f5f5dc", image: "dune_front_cream.jpg" },
+                    { name: "Blue", hex: "#1d4ed8", image: "dune_front_blue.jpg" },
+                    { name: "Red", hex: "#ff0000", image: "dune_front_red.jpg" }
+                ], 
                 sizes: ["S", "M", "L", "XL"], tag: "New Drop" 
             },
-            { 
-                id: 9, name: "Dune Motion Tee (Back)", price: 50.00, category: "Camisas", 
-                description: "Variante 'Back Print' de la serie Dune Motion. Gráfico completo en espalda, frente minimalista.", 
-                image: "dune_back.jpg",
-                colors: [{ name: "Sand", hex: "#d2b48c" }], 
-                sizes: ["S", "M", "L", "XL"], tag: "New Drop" 
+            {
+                id: 11,
+                name: "Bermudas",
+                price: 20.00,
+                category: "Bermudas",
+                description: "Bermudas de denim corte relajado exclusivos de la colección Arkon.",
+                image: "bermuda_patch.jpg",
+                colors: [{ name: "Light Wash", hex: "#93c5fd" }],
+                sizes: ["28", "30", "32", "34"],
+                tag: "New"
             }
         ];
 
         let selectedProduct = null; let selectedOptions = { size: null, color: null };
 
-        // LOGICA SLIDESHOW
-        function startGothicSlideshow() {
-            if (gothicSlideshowInterval) clearInterval(gothicSlideshowInterval);
-            
-            const gothicProduct = products.find(p => p.id === 1);
-            if (!gothicProduct) return;
+        // LOGICA SLIDESHOW (AHORA GENÉRICA Y LIMPIA)
+        function startSlideshow(productId, images) {
+            // Si ya existe un intervalo para este producto, no hacer nada o limpiarlo
+            if (productSlideshows[productId]) clearInterval(productSlideshows[productId]);
 
-            const images = gothicProduct.colors.map(c => c.image);
             let currentIndex = 0;
 
-            gothicSlideshowInterval = setInterval(() => {
-                const containers = document.querySelectorAll(`[data-product-id="1"] .product-image-container`);
+            productSlideshows[productId] = setInterval(() => {
+                const containers = document.querySelectorAll(`[data-product-id="${productId}"] .product-image-container`);
                 if (containers.length === 0) return;
 
                 currentIndex = (currentIndex + 1) % images.length;
                 const nextImage = images[currentIndex];
 
                 containers.forEach(container => {
-                    // Creamos la imagen de "fondo" (siguiente slide)
                     const nextImgEl = document.createElement('img');
                     nextImgEl.src = nextImage;
                     nextImgEl.className = "absolute inset-0 w-full h-full object-cover z-0";
-                    container.prepend(nextImgEl); // Poner detrás de la actual
+                    container.prepend(nextImgEl);
 
-                    // La imagen actual (frente)
                     const currentImgEl = container.querySelector('img.relative');
                     
                     if(currentImgEl) {
                         currentImgEl.classList.add('smooth-fade');
-                        currentImgEl.style.opacity = '0'; // Desvanecer la de frente
+                        currentImgEl.style.opacity = '0';
 
                         setTimeout(() => {
-                            // Una vez desvanecida, la eliminamos y hacemos que la de fondo sea la nueva de frente
                             currentImgEl.remove();
                             nextImgEl.classList.remove('absolute', 'inset-0', 'z-0');
                             nextImgEl.classList.add('relative', 'z-10');
-                        }, 1000); // Esperar a que termine la transición CSS (1s)
+                        }, 1000);
                     } else {
-                        // Fallback si algo falla, limpiar y poner la nueva
-                         container.innerHTML = `<img src="${nextImage}" class="relative w-full h-full object-cover z-10" alt="Gothic Logo Tee">`;
-                         // Re-inject tag overlay if needed (simplified here)
+                         container.innerHTML = `<img src="${nextImage}" class="relative w-full h-full object-cover z-10" alt="Product Image">`;
+                         // Re-inject tag overlay logic would go here ideally
                     }
                 });
-            }, 3000); 
+            }, 3000);
         }
+        
+        function initAllSlideshows() {
+             // 1. Gothic Logo Tee (ID 1)
+            const gothicProduct = products.find(p => p.id === 1);
+            if (gothicProduct && gothicProduct.colors.length > 1) {
+                const images = gothicProduct.colors.map(c => c.image);
+                startSlideshow(1, images);
+            }
+
+            // 2. Dune Motion Tee (Front) (ID 8)
+            const duneProduct = products.find(p => p.id === 8);
+             if (duneProduct && duneProduct.colors.length > 1) {
+                const images = duneProduct.colors.map(c => c.image);
+                startSlideshow(8, images);
+            }
+        }
+
 
         // LOGICA UI
         window.navigateTo = (viewId, filter = 'all') => {
@@ -499,7 +513,7 @@
             window.scrollTo(0, 0);
             if(viewId === 'shop') filterProducts(filter);
             
-            setTimeout(startGothicSlideshow, 100); 
+            setTimeout(initAllSlideshows, 100); 
         };
 
         // FUNCIÓN TOGGLE ACORDEÓN
@@ -536,7 +550,7 @@
             }
             lucide.createIcons();
             if(category !== 'all') window.toggleFilters();
-            setTimeout(startGothicSlideshow, 100);
+            setTimeout(initAllSlideshows, 100);
         };
 
         function createProductCard(product) {
@@ -563,8 +577,7 @@
             
             let realImageSrc = selectedProduct.image;
             if (cardElement) {
-                // Intentamos capturar la imagen que esté visible (útil si el slideshow está corriendo)
-                const imgTag = cardElement.querySelector('img.relative'); // Buscamos la que tiene clase relative (frente)
+                const imgTag = cardElement.querySelector('img.relative'); 
                 if (imgTag) realImageSrc = imgTag.src;
             }
             document.getElementById('modal-product-image').src = realImageSrc;
@@ -712,10 +725,8 @@
             initializeFirebase();
             document.getElementById('home-product-grid').innerHTML = products.slice(0, 3).map(product => createProductCard(product)).join('');
             lucide.createIcons();
-            startGothicSlideshow(); // INICIAR SLIDESHOW
+            initAllSlideshows(); // INICIAR SLIDESHOWS AL CARGAR
         };
     </script>
 </body>
 </html>
-
-
