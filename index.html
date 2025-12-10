@@ -64,14 +64,18 @@
         ::selection { background-color: #ef4444; color: white; }
         
         .product-image-container { overflow: hidden; position: relative; }
-        /* Transición suave para el cambio de imagen automático */
+        
+        /* CORRECCIÓN: Clases para la doble imagen del slideshow */
         .product-image-container img { 
-            transition: transform 0.5s ease, opacity 0.5s ease; 
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
         }
-        .group:hover .product-image-container img { transform: scale(1.05); }
+        
+        /* Esta clase asegura que la transición de opacidad sea suave */
+        .smooth-fade {
+            transition: opacity 1s ease-in-out;
+        }
 
         .btn-hover-effect { position: relative; overflow: hidden; transition: color 0.3s; }
         .btn-hover-effect::before {
@@ -166,11 +170,14 @@
     <div id="view-home" class="animate-fade-in">
         <header class="relative h-screen w-full overflow-hidden flex items-center justify-center">
             <div class="absolute inset-0 z-0">
-                <img src="portada.jpg" 
-                     class="w-full h-full object-cover object-top opacity-60" 
-                     alt="Maison Arkon Campaign"
-                     onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop'">
-                <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/30 via-transparent to-arkon-black"></div>
+                <!-- Video de fondo (si existe) -->
+                <video autoplay loop muted playsinline class="w-full h-full object-cover">
+                    <source src="portada.mp4" type="video/mp4">
+                    <!-- Fallback -->
+                    <img src="portada.jpg" class="w-full h-full object-cover object-top opacity-60" alt="Maison Arkon Campaign">
+                </video>
+                <div class="absolute inset-0 bg-black/40"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-arkon-black/60 via-transparent to-arkon-black"></div>
             </div>
 
             <div class="relative z-10 text-center px-4 max-w-5xl">
@@ -449,20 +456,39 @@
             let currentIndex = 0;
 
             gothicSlideshowInterval = setInterval(() => {
-                const imgElements = document.querySelectorAll(`[data-product-id="1"] img`);
-                if (imgElements.length === 0) return;
+                const containers = document.querySelectorAll(`[data-product-id="1"] .product-image-container`);
+                if (containers.length === 0) return;
 
                 currentIndex = (currentIndex + 1) % images.length;
                 const nextImage = images[currentIndex];
 
-                imgElements.forEach(img => {
-                    img.style.opacity = '0';
-                    setTimeout(() => {
-                        img.src = nextImage;
-                        img.style.opacity = '1';
-                    }, 500); // Wait for fade out transition
+                containers.forEach(container => {
+                    // Creamos la imagen de "fondo" (siguiente slide)
+                    const nextImgEl = document.createElement('img');
+                    nextImgEl.src = nextImage;
+                    nextImgEl.className = "absolute inset-0 w-full h-full object-cover z-0";
+                    container.prepend(nextImgEl); // Poner detrás de la actual
+
+                    // La imagen actual (frente)
+                    const currentImgEl = container.querySelector('img.relative');
+                    
+                    if(currentImgEl) {
+                        currentImgEl.classList.add('smooth-fade');
+                        currentImgEl.style.opacity = '0'; // Desvanecer la de frente
+
+                        setTimeout(() => {
+                            // Una vez desvanecida, la eliminamos y hacemos que la de fondo sea la nueva de frente
+                            currentImgEl.remove();
+                            nextImgEl.classList.remove('absolute', 'inset-0', 'z-0');
+                            nextImgEl.classList.add('relative', 'z-10');
+                        }, 1000); // Esperar a que termine la transición CSS (1s)
+                    } else {
+                        // Fallback si algo falla, limpiar y poner la nueva
+                         container.innerHTML = `<img src="${nextImage}" class="relative w-full h-full object-cover z-10" alt="Gothic Logo Tee">`;
+                         // Re-inject tag overlay if needed (simplified here)
+                    }
                 });
-            }, 3000); // Change every 3 seconds (2s pause + 1s transition)
+            }, 3000); 
         }
 
         // LOGICA UI
@@ -473,7 +499,6 @@
             window.scrollTo(0, 0);
             if(viewId === 'shop') filterProducts(filter);
             
-            // Re-init slideshow if on home or shop (where grid is visible)
             setTimeout(startGothicSlideshow, 100); 
         };
 
@@ -517,8 +542,8 @@
         function createProductCard(product) {
             return `<div class="group cursor-pointer animate-fade-in" data-product-id="${product.id}" onclick="openModal(${product.id}, this)">
                 <div class="product-image-container bg-[#1a1a1a] aspect-[4/5] mb-4 relative rounded-sm">
-                    <img src="${product.image}" class="p-0 h-full w-full object-cover" alt="${product.name}" onerror="this.src='https://placehold.co/600x750/1a1a1a/ef4444?text=Arkon'">
-                    ${product.tag ? `<div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase">${product.tag}</div>` : ''}
+                    <img src="${product.image}" class="relative w-full h-full object-cover z-10" alt="${product.name}" onerror="this.src='https://placehold.co/600x750/1a1a1a/ef4444?text=Arkon'">
+                    ${product.tag ? `<div class="absolute top-3 left-3 bg-arkon-red text-white text-[10px] font-bold px-2 py-1 uppercase z-20">${product.tag}</div>` : ''}
                 </div>
                 <div class="flex justify-between items-start">
                     <div><h3 class="font-bold text-lg uppercase">${product.name}</h3><p class="text-sm text-gray-500 font-mono">${product.category}</p></div>
@@ -538,7 +563,8 @@
             
             let realImageSrc = selectedProduct.image;
             if (cardElement) {
-                const imgTag = cardElement.querySelector('img');
+                // Intentamos capturar la imagen que esté visible (útil si el slideshow está corriendo)
+                const imgTag = cardElement.querySelector('img.relative'); // Buscamos la que tiene clase relative (frente)
                 if (imgTag) realImageSrc = imgTag.src;
             }
             document.getElementById('modal-product-image').src = realImageSrc;
@@ -686,8 +712,10 @@
             initializeFirebase();
             document.getElementById('home-product-grid').innerHTML = products.slice(0, 3).map(product => createProductCard(product)).join('');
             lucide.createIcons();
-            startGothicSlideshow(); // Iniciar slideshow al cargar
+            startGothicSlideshow(); // INICIAR SLIDESHOW
         };
     </script>
 </body>
 </html>
+
+
